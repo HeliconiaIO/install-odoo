@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "Node",
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "rootDir": "./src",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@helpers/*": ["helpers/*"]
+    },
+    "strict": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}
