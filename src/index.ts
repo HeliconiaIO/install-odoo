@@ -1,10 +1,8 @@
-#!/usr/bin/env -S ts-node --files
+#!/usr/bin/env -S pnpm tsx
 import { Command } from "commander";
-import * as fs from "fs";
 import pc from "picocolors";
 import prompts from "prompts";
 
-import { cloneOdoo } from "@helpers/clone-odoo";
 
 const program = new Command();
 
@@ -13,7 +11,6 @@ program
   .version("1.0.0")
   .description("Odoo Installer CLI")
   .action(async () => {
-    // Step 1: Gather Information from User
     const response = await prompts([
       {
         type: "select",
@@ -27,23 +24,28 @@ program
       {
         type: "confirm",
         name: "isEnterprise",
-        message: "Want to install the Odoo enterprise?",
+        message: "Want to install the Odoo Enterprise?",
         initial: false,
       },
       {
+        type: (prev, values) => (values.isEnterprise ? "password" : null), // If `isEnterprise` is `true`, ask for the github access token
+        name: "accessToken",
+        message: "Enter Github Access Token:",
+      },
+      {
         type: "confirm",
-        name: "installPostgres",
+        name: "installPG",
         message: "Want to install Postgres 16?",
         initial: true,
       },
       {
         type: "confirm",
-        name: "installNginx",
+        name: "nginx",
         message: "Want to install Nginx?",
         initial: false,
       },
       {
-        type: (prev) => (prev ? "text" : null), // If `installNginx` is `true`, ask for the website name
+        type: (prev, values) => (values.nginx ? "text" : null), // If `nginx` is `true`, ask for the website name
         name: "websiteName",
         message: "Enter the website name:",
         initial: "_",
@@ -51,16 +53,19 @@ program
           value.trim() !== "" ? true : "Website name cannot be empty",
       },
       {
-        type: (prev, values) => (values.installNginx ? "confirm" : null), // If `installNginx` is `true`, ask to enable SSL
-        name: "enableSSL",
+        type: (prev, values) => (values.nginx ? "confirm" : null), // If `nginx` is `true`, ask to enable SSL
+        name: "ssl",
         message: "Do you want to enable SSL?",
-        initial: true,
+        initial: (prev, values) => (values.websiteName === "_" ? false : true),
       },
       {
-        type: (prev, values) => (values.enableSSL ? "text" : null), // If `installNginx` is `true`, ask to enable SSL
+        type: (prev, values) => (values.ssl ? "text" : null), // If `nginx` is `true`, ask to enable SSL
         name: "adminEmail",
         message: "Enter the admin Email:",
-        initial: "odoo@example.com",
+        validate: (value) => {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(value) ? true : "Please enter a valid email address.";
+        }
       },
       {
         type: "confirm",
@@ -78,25 +83,31 @@ program
       {
         type: "text",
         name: "odooUser",
-        message: "Enter the Name of the system user",
+        message: "Enter the Name of the system user for Odoo:",
         initial: "odoo",
+      },
+      {
+        type: (prev, values) => (values.installPG ? "text" : null), // If `nginx` is `true`, ask to enable SSL
+        name: "pgUser",
+        message: "Enter the Name of the PostgreSQL user for Odoo:",
+        initial: (prev, values) => values.odooUser || "", // Set initial value to odooUser if it's provided
       },
       {
         type: "text",
         name: "odooHome",
-        message: "Enter the path for Odoo Home",
+        message: "Enter the path for Odoo Home:",
         initial: "/odoo",
       },
       {
         type: "number",
-        name: "odooPort",
-        message: "Set the default Odoo port",
+        name: "httpPort",
+        message: "Set the default Odoo port:",
         initial: 8069,
       },
       {
         type: "number",
-        name: "longpollingPort",
-        message: "Set the default Odoo port for websocket",
+        name: "geventPort",
+        message: "Set the default Odoo port for websocket:",
         initial: 8072,
       },
       {
@@ -107,7 +118,7 @@ program
       },
     ]);
 
-    const { version, odooHome } = response;
+    const { version, odooHome, installPG, pgUser, installWkhtmltopdf } = response;
 
     if (!version || !odooHome) {
       console.log(pc.red("Invalid input. Exiting..."));
@@ -116,9 +127,25 @@ program
 
     console.log(pc.green(`✔ Created directory ${pc.italic(odooHome)}`));
 
-    if (fs.existsSync(odooHome)) {
-      cloneOdoo(version, odooHome);
-    }
+
+
+
+    // if (installPG) {
+    //   installPostgreSQL();
+    //   createPostgreSQLUser(pgUser);
+    // }
+
+    // await installPipPackages(version);
+
+    // cloneOdoo(version, odooHome);
+
+    // if (installWkhtmltopdf) {
+
+    // }
+
+    // if (fs.existsSync(odooHome)) {
+
+    // }
 
   });
 
