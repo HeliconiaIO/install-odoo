@@ -1,8 +1,8 @@
+import { cloneRepo } from "@helpers/clone-repo";
 import { runCommand } from "@helpers/run-command";
 import ora from "ora";
 import path from "path";
 import pc from "picocolors";
-import { cloneRepo } from "./clone-repo";
 
 
 const requiredPackages = [
@@ -27,8 +27,7 @@ const requiredPackages = [
     "libzip-dev",
     "node-less",
     "libpng-dev",
-    "gdebi",
-    "rtlcss"
+    "gdebi"
 ];
 
 const installRequiredPackages = async () => {
@@ -44,19 +43,26 @@ const installRequiredPackages = async () => {
 
 export const prepareServer = async () => {
 
-    console.log(pc.magenta(`Updating Server...`));
+    console.log(pc.magenta(`Preparing Server...`));
 
     await runCommand({
         command: `sudo apt-get update`,
+        message: "Updating Server..",
+        successMessage: "Server Updated."
     })
-
-    console.log(pc.magenta(`Upgrading Server...`));
 
     await runCommand({
         command: `sudo apt-get upgrade -y`,
+        message: "Upgrading Server..",
+        successMessage: "Server Upgraded."
     })
 
     installRequiredPackages()
+
+    await runCommand({
+        command: `sudo npm install -g rtlcss less less-plugin-clean-css`,
+        mute: true
+    })
 
 }
 

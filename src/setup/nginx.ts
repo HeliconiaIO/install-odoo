@@ -1,7 +1,7 @@
+import { runCommand } from '@helpers/run-command';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import pc from 'picocolors';
-import { runCommand } from './run-command';
 
 /**
  * Checks if Nginx is installed. If not, installs it and creates a new configuration file for the given website.

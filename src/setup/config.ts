@@ -1,16 +1,31 @@
+import { runCommand } from "@helpers/run-command";
+import crypto from 'crypto';
 import fs from "fs";
 import path from "path";
 import pc from "picocolors";
-import { runCommand } from "./run-command";
 
 type configType = {
     odooUser: string;
     odooHome: string;
     dbUser: string;
     dbPassword: string;
+    strongAdminPassword: Boolean;
+    adminPassword: string;
     httpPort: number;
     geventPort: number;
     nginx: boolean;
+}
+
+/**
+ * Generates a strong password with a mix of characters.
+ * @param length The desired length of the password (default is 16).
+ * @returns A randomly generated strong password.
+ */
+export function generateStrongAdminPassword(length: number = 16): string {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
+    return Array.from(crypto.randomFillSync(new Uint32Array(length)))
+        .map((x) => charset[x % charset.length])
+        .join('');
 }
 
 
@@ -20,7 +35,6 @@ export const prepareAddonsPath = (odooHome: string): string => {
 
     let addonsPath = `${serverAddonsPath},${customAddonsPath}`;
 
-    // Base custom directory to look for other custom repositories
     const customDirectory = path.join(odooHome, 'custom');
 
     try {
@@ -50,6 +64,8 @@ export const odooConfig = async (config: configType) => {
         odooHome,
         dbUser,
         dbPassword,
+        strongAdminPassword,
+        adminPassword,
         httpPort,
         geventPort,
         nginx
@@ -57,15 +73,13 @@ export const odooConfig = async (config: configType) => {
 
     const filePath = `/etc/${odooUser}.conf`
 
-
-
     console.log(pc.magenta(`Creating Odoo configuration file at: ${filePath}`));
 
     // Define the configuration content
     const configContent = `
 [options]
 ; General settings
-admin_passwd = admin
+admin_passwd = ${strongAdminPassword ? generateStrongAdminPassword(16) : adminPassword}
 db_host = False
 db_port = False
 db_user = ${dbUser}

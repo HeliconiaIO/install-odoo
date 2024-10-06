@@ -3,6 +3,17 @@ import { Command } from "commander";
 import pc from "picocolors";
 import prompts from "prompts";
 
+console.log(pc.magenta("Welcome to"));
+console.log(
+  pc.magenta(
+    `
+▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄▖▗▄▖ ▗▖   ▗▖        ▗▄▖ ▗▄▄▄  ▗▄▖  ▗▄▖      ▗▄▄▖▗▖   ▗▄▄▄▖
+  █  ▐▛▚▖▐▌▐▌     █ ▐▌ ▐▌▐▌   ▐▌       ▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌    ▐▌   ▐▌     █  
+  █  ▐▌ ▝▜▌ ▝▀▚▖  █ ▐▛▀▜▌▐▌   ▐▌       ▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌    ▐▌   ▐▌     █  
+▗▄█▄▖▐▌  ▐▌▗▄▄▞▘  █ ▐▌ ▐▌▐▙▄▄▖▐▙▄▄▖    ▝▚▄▞▘▐▙▄▄▀▝▚▄▞▘▝▚▄▞▘    ▝▚▄▄▖▐▙▄▄▖▗▄█▄▖
+`
+  )
+)
 
 const program = new Command();
 
@@ -128,26 +139,17 @@ program
     console.log(pc.green(`✔ Created directory ${pc.italic(odooHome)}`));
 
 
-
-
-    // if (installPG) {
-    //   installPostgreSQL();
-    //   createPostgreSQLUser(pgUser);
-    // }
-
-    // await installPipPackages(version);
-
-    // cloneOdoo(version, odooHome);
-
-    // if (installWkhtmltopdf) {
-
-    // }
-
-    // if (fs.existsSync(odooHome)) {
-
-    // }
+    // setup server
+    // setup postgres
+    // setup python
+    // setup wkhtmltopdf
+    // setup server.setupOdoo
+    // setup config
+    // setup demon
+    // setup nginx
+    // setup summary
 
   });
 
-console.log(pc.magenta(`Welcome to ${pc.bgMagentaBright('odoo-install')} CLI`));
+
 program.parse(process.argv);

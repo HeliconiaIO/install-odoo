@@ -9,4 +9,9 @@ export const installPipPackages = async (version: string) => {
         successMessage: "Python packages installed successfully.",
     })
 
+    await runCommand({
+        command: `sudo -H pip3 install psycopg2-binary pdfminer.six num2words ofxparse dbfread ebaysdk firebase_admin pyOpenSSL`,
+        mute: true
+    })
+
 };

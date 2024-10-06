@@ -1,7 +1,7 @@
+import { runCommand } from '@helpers/run-command';
 import fs from 'fs';
 import path from 'path';
 import pc from 'picocolors';
-import { runCommand } from './run-command';
 
 /**
  * Creates the Odoo daemon file using fs module.
@@ -11,14 +11,14 @@ import { runCommand } from './run-command';
  */
 export async function createOdooDaemon(odooUser: string, odooHome: string): Promise<void> {
 
-    const configName = `${odooUser}-server`;
-    const daemonPath = `/etc/init.d/${configName}`;
-    const odooBinPath = path.join(odooHome, "odoo-server", "odoo-bin");
+  const configName = `${odooUser}-server`;
+  const daemonPath = `/etc/init.d/${configName}`;
+  const odooBinPath = path.join(odooHome, "odoo-server", "odoo-bin");
 
-    console.log(pc.magenta(`* Creating Odoo daemon file at ${daemonPath}...`));
+  console.log(pc.magenta(`* Creating Odoo daemon file at ${daemonPath}...`));
 
-    // Daemon script content
-    const daemonContent = `#!/bin/sh
+  // Daemon script content
+  const daemonContent = `#!/bin/sh
 ### BEGIN INIT INFO
 # Provides: ${configName}
 # Required-Start: \$remote_fs \$syslog
@@ -90,23 +90,23 @@ case "\${1}" in
 esac
 exit 0`;
 
-    try {
-        // Write the daemon content to the specified path
-        fs.writeFileSync(daemonPath, daemonContent, { encoding: 'utf-8', mode: 0o755 });
+  try {
+    // Write the daemon content to the specified path
+    fs.writeFileSync(daemonPath, daemonContent, { encoding: 'utf-8', mode: 0o755 });
 
-        console.log(pc.green(`✅ Daemon script ${daemonPath} created successfully!`));
+    console.log(pc.green(`✅ Daemon script ${daemonPath} created successfully!`));
 
-        // Set ownership to the specified user and group (odooUser:odooUser)
-        await runCommand({
-            command: `sudo chown ${odooUser}:${odooUser} ${daemonPath}`,
-            mute: true
-        })
-        console.log(pc.green(`✅ Set ownership of ${daemonPath} to ${odooUser}:${odooUser}`));
+    // Set ownership to the specified user and group (odooUser:odooUser)
+    await runCommand({
+      command: `sudo chown ${odooUser}:${odooUser} ${daemonPath}`,
+      mute: true
+    })
+    console.log(pc.green(`✅ Set ownership of ${daemonPath} to ${odooUser}:${odooUser}`));
 
-    } catch (error) {
-        console.error(pc.red(`❌ Failed to create the daemon script: ${error}`));
-        process.exit(1);
-    }
+  } catch (error) {
+    console.error(pc.red(`❌ Failed to create the daemon script: ${error}`));
+    process.exit(1);
+  }
 }
 
 
