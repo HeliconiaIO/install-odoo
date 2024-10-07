@@ -3,7 +3,7 @@ import { execSync } from "child_process"; // todo: replace with runCommand
 import pc from "picocolors";
 
 
-const isPostgreSQLInstalled = (): boolean => {
+const isPostgreSQLInstalled = async (): Promise<boolean> => {
     try {
         const result = execSync('pg_lsclusters', { stdio: 'ignore' });
         return true;
@@ -12,7 +12,7 @@ const isPostgreSQLInstalled = (): boolean => {
     }
 };
 
-const getPostgreSQLVersion = (): string | null => {
+const getPostgreSQLVersion = async (): Promise<string | null> => {
     try {
         const result = execSync('pg_config --version', { encoding: 'utf-8' });
         return result.trim();
@@ -45,12 +45,11 @@ export const createPostgreSQLUser = async (user: string) => {
 }
 
 export const installPostgreSQL = async () => {
-    if (isPostgreSQLInstalled()) {
-        const pgVersion = getPostgreSQLVersion()
+    if (await isPostgreSQLInstalled()) {
+        const pgVersion = await getPostgreSQLVersion()
         console.log(pc.green(`${pc.underline(pgVersion)} is already installed.`));
         return;
     }
-    console.log(pc.magenta(`Installing PostgreSQL 16...`));
 
     await runCommand({
         command: `wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql.gpg`,

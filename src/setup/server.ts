@@ -80,11 +80,6 @@ const createOdooDirs = async (odooHome: string, odooUser: string) => {
     })
 
     await runCommand({
-        command: `sudo su ${odooUser} -c "mkdir ${odooHome}/custom"`,
-        mute: true
-    })
-
-    await runCommand({
         command: `sudo su ${odooUser} -c "mkdir -p ${odooHome}/custom/addons"`,
         mute: true
     })

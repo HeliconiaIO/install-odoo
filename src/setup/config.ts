@@ -3,18 +3,8 @@ import crypto from 'crypto';
 import fs from "fs";
 import path from "path";
 import pc from "picocolors";
+import { OdooConfigType } from "types";
 
-type configType = {
-    odooUser: string;
-    odooHome: string;
-    dbUser: string;
-    dbPassword: string;
-    strongAdminPassword: Boolean;
-    adminPassword: string;
-    httpPort: number;
-    geventPort: number;
-    nginx: boolean;
-}
 
 /**
  * Generates a strong password with a mix of characters.
@@ -47,8 +37,6 @@ export const prepareAddonsPath = (odooHome: string): string => {
                 }
             });
         }
-
-        console.log(pc.green(`Successfully prepared addons path: ${addonsPath}`));
     } catch (error) {
         console.error(pc.red(`Failed to prepare addons path: ${error}`));
         process.exit(1);
@@ -57,21 +45,21 @@ export const prepareAddonsPath = (odooHome: string): string => {
     return addonsPath;
 };
 
-export const odooConfig = async (config: configType) => {
+export const setupOdooConfig = async (config: OdooConfigType) => {
 
     const {
         odooUser,
         odooHome,
-        dbUser,
-        dbPassword,
-        strongAdminPassword,
+        pgUser,
+        pgPassword,
+        strongPassword,
         adminPassword,
         httpPort,
         geventPort,
         nginx
     } = config;
 
-    const filePath = `/etc/${odooUser}.conf`
+    const filePath = `/etc/${odooUser}-server.conf`
 
     console.log(pc.magenta(`Creating Odoo configuration file at: ${filePath}`));
 
@@ -79,11 +67,11 @@ export const odooConfig = async (config: configType) => {
     const configContent = `
 [options]
 ; General settings
-admin_passwd = ${strongAdminPassword ? generateStrongAdminPassword(16) : adminPassword}
-db_host = False
-db_port = False
-db_user = ${dbUser}
-db_password = ${dbPassword}
+admin_passwd = ${strongPassword ? generateStrongAdminPassword(16) : adminPassword}
+db_host = localhost
+db_port = 5432
+db_user = ${pgUser}
+db_password = ${pgPassword}
 
 ; Addons path and other directories
 addons_path = ${prepareAddonsPath(odooHome)}

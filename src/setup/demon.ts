@@ -4,12 +4,12 @@ import path from 'path';
 import pc from 'picocolors';
 
 /**
- * Creates the Odoo daemon file using fs module.
+ * Setup the Odoo daemon file using fs module.
  * @param odooUser - The system user for running Odoo.
  * @param odooHome - The base directory for the Odoo installation.
  * @param configName - The name of the Odoo config file (without extension).
  */
-export async function createOdooDaemon(odooUser: string, odooHome: string): Promise<void> {
+export async function setupDaemon(odooUser: string, odooHome: string): Promise<void> {
 
   const configName = `${odooUser}-server`;
   const daemonPath = `/etc/init.d/${configName}`;
@@ -94,14 +94,18 @@ exit 0`;
     // Write the daemon content to the specified path
     fs.writeFileSync(daemonPath, daemonContent, { encoding: 'utf-8', mode: 0o755 });
 
-    console.log(pc.green(`✅ Daemon script ${daemonPath} created successfully!`));
-
     // Set ownership to the specified user and group (odooUser:odooUser)
     await runCommand({
       command: `sudo chown ${odooUser}:${odooUser} ${daemonPath}`,
       mute: true
     })
-    console.log(pc.green(`✅ Set ownership of ${daemonPath} to ${odooUser}:${odooUser}`));
+
+    await runCommand({
+      command: `sudo update-rc.d ${odooUser}-server defaults`,
+      mute: true
+    })
+
+    console.log(pc.green(`✅ Daemon script ${daemonPath} created successfully!`));
 
   } catch (error) {
     console.error(pc.red(`❌ Failed to create the daemon script: ${error}`));

@@ -1,22 +1,22 @@
 #!/usr/bin/env -S pnpm tsx
+import { ScriptName } from "@helpers/misc";
+import { setupOdooConfig } from "@setup/config";
+import { setupDaemon } from "@setup/demon";
+import { setupNginx } from "@setup/nginx";
+import { createPostgreSQLUser, installPostgreSQL } from "@setup/postgres";
+import { installPipPackages } from "@setup/python";
+import { prepareServer, setupOdoo } from "@setup/server";
+import { odooInstallSummary, odooInstallSummaryMarkdown } from "@setup/summary";
+import { installWkhtmltopdf } from "@setup/wkhtmltopdf";
 import { Command } from "commander";
 import pc from "picocolors";
 import prompts from "prompts";
+import { OdooConfigType } from "types";
 
 console.log(pc.magenta("Welcome to"));
-console.log(
-  pc.magenta(
-    `
-▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄▖▗▄▖ ▗▖   ▗▖        ▗▄▖ ▗▄▄▄  ▗▄▖  ▗▄▖      ▗▄▄▖▗▖   ▗▄▄▄▖
-  █  ▐▛▚▖▐▌▐▌     █ ▐▌ ▐▌▐▌   ▐▌       ▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌    ▐▌   ▐▌     █  
-  █  ▐▌ ▝▜▌ ▝▀▚▖  █ ▐▛▀▜▌▐▌   ▐▌       ▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌    ▐▌   ▐▌     █  
-▗▄█▄▖▐▌  ▐▌▗▄▄▞▘  █ ▐▌ ▐▌▐▙▄▄▖▐▙▄▄▖    ▝▚▄▞▘▐▙▄▄▀▝▚▄▞▘▝▚▄▞▘    ▝▚▄▄▖▐▙▄▄▖▗▄█▄▖
-`
-  )
-)
+console.log(pc.magenta(ScriptName))
 
 const program = new Command();
-
 
 program
   .version("1.0.0")
@@ -71,7 +71,7 @@ program
       },
       {
         type: (prev, values) => (values.ssl ? "text" : null), // If `nginx` is `true`, ask to enable SSL
-        name: "adminEmail",
+        name: "sslEmail",
         message: "Enter the admin Email:",
         validate: (value) => {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -80,7 +80,7 @@ program
       },
       {
         type: "confirm",
-        name: "strongAdminPassword",
+        name: "strongPassword",
         message: "Want to generate random strong odoo super admin password?",
         initial: true,
       },
@@ -98,10 +98,17 @@ program
         initial: "odoo",
       },
       {
-        type: (prev, values) => (values.installPG ? "text" : null), // If `nginx` is `true`, ask to enable SSL
+        type: (prev, values) => (values.installPG ? "text" : null), // If `installPG` is `true`, ask to for PG User
         name: "pgUser",
         message: "Enter the Name of the PostgreSQL user for Odoo:",
         initial: (prev, values) => values.odooUser || "", // Set initial value to odooUser if it's provided
+      },
+      {
+        type: (prev, values) => (values.installPG ? "password" : null), // If `installPG` is `true`, ask to for PG User
+        name: "pgPassword",
+        message: `Enter the Password for PostgreSQL user for Odoo:`,
+        validate: (value) =>
+          value.length < 8 ? `Password must be at least 8 characters.` : true,
       },
       {
         type: "text",
@@ -123,31 +130,94 @@ program
       },
       {
         type: "confirm",
-        name: "installWkhtmltopdf",
+        name: "wkhtmltopdf",
         message: "Want to install WKHTMLTOPDF?",
         initial: true,
       },
     ]);
 
-    const { version, odooHome, installPG, pgUser, installWkhtmltopdf } = response;
+    const { version, odooHome, odooUser, installPG, pgUser, pgPassword, strongPassword, adminPassword, httpPort, geventPort, nginx, websiteName, ssl, sslEmail, wkhtmltopdf } = response;
 
-    if (!version || !odooHome) {
-      console.log(pc.red("Invalid input. Exiting..."));
-      return;
+    const OdooConfig: OdooConfigType = {
+      version: version,
+      odooUser: odooUser,
+      odooHome: odooHome,
+      pgUser: pgUser,
+      pgPassword: pgPassword,
+      strongPassword: strongPassword,
+      adminPassword: adminPassword,
+      httpPort: httpPort,
+      geventPort: geventPort,
+      nginx: nginx,
+      websiteName: websiteName,
+      ssl: ssl,
+      sslEmail: sslEmail,
+      wkhtmltopdf: wkhtmltopdf
     }
 
-    console.log(pc.green(`✔ Created directory ${pc.italic(odooHome)}`));
 
+    const summary = odooInstallSummary(OdooConfig);
 
-    // setup server
-    // setup postgres
-    // setup python
-    // setup wkhtmltopdf
-    // setup server.setupOdoo
-    // setup config
-    // setup demon
-    // setup nginx
-    // setup summary
+    console.log(pc.magentaBright(summary));
+
+    const confirmResponse = await prompts({
+      type: 'toggle',
+      name: 'value',
+      message: 'Do you want to proceed with the installation based on the above summary?',
+      initial: true,
+      active: 'yes',
+      inactive: 'no'
+    });
+
+    if (confirmResponse.value) {
+      try {
+        // Setup server
+        await prepareServer();
+
+        // Setup PostgreSQL
+        if (installPG) {
+          await installPostgreSQL();
+        }
+
+        // Create PostgreSQL user
+        await createPostgreSQLUser(pgUser);
+
+        // Setup Python packages
+        await installPipPackages(version);
+
+        // Setup wkhtmltopdf
+        if (wkhtmltopdf) {
+          await installWkhtmltopdf();
+        }
+
+        // Setup Odoo
+        await setupOdoo(version, odooHome, odooUser);
+
+        // Setup Odoo configuration
+        await setupOdooConfig(OdooConfig);
+
+        // Setup daemon
+        await setupDaemon(odooUser, odooHome);
+
+        // Setup Nginx
+        if (nginx) {
+          await setupNginx(httpPort, geventPort, websiteName);
+        }
+
+        // Generate Odoo installation summary
+        await odooInstallSummaryMarkdown(OdooConfig);
+
+        // Exit the CLI after completing the setup
+        process.exit(0);
+
+      } catch (error) {
+        console.error(pc.red(`An error occurred during setup: ${error}`));
+        process.exit(1);
+      }
+    } else {
+      console.log(pc.red('Installation cancelled by the user.'));
+      process.exit(0);
+    }
 
   });
 

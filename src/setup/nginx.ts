@@ -7,10 +7,9 @@ import pc from 'picocolors';
  * Checks if Nginx is installed. If not, installs it and creates a new configuration file for the given website.
  * @param httpPort - The HTTP port to use for the Odoo server.
  * @param geventPort - The gevent port for websocket connections.
- * @param odooUser - The user running the Odoo service.
  * @param websiteName - The name of the website (used in config and server_name).
  */
-export function setupNginxConfig(httpPort: number, geventPort: number, odooUser: string, websiteName: string): void {
+export const setupNginx = async (httpPort: number, geventPort: number, websiteName: string): Promise<void> => {
     try {
         // Check if Nginx is installed
         execSync('which nginx', { stdio: 'ignore' });
@@ -121,7 +120,7 @@ server {
  * @param websiteName - The name of the website to enable SSL for.
  * @param adminEmail - The email address for administrative notifications.
  */
-export function enableSSL(websiteName: string, adminEmail: string): void {
+export const enableSSL = async (websiteName: string, adminEmail: string): Promise<void> => {
 
     // Validate website name
     if (websiteName === '_') {
