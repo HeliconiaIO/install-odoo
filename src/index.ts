@@ -185,11 +185,6 @@ program
         // Setup Python packages
         await installPipPackages(version, odooHome);
 
-        // Setup wkhtmltopdf
-        if (wkhtmltopdf) {
-          await installWkhtmltopdf();
-        }
-
         // Setup Odoo
         await setupOdoo(version, odooHome, odooUser);
 
@@ -198,6 +193,11 @@ program
 
         // Setup daemon
         await setupDaemon(odooUser, odooHome);
+
+        // Setup wkhtmltopdf
+        if (wkhtmltopdf) {
+          await installWkhtmltopdf();
+        }
 
         // Setup Nginx
         if (nginx) {

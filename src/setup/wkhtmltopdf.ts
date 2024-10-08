@@ -50,11 +50,11 @@ export const installWkhtmltopdf = async () => {
 
     // Create symbolic links
     await runCommand({
-        command: `sudo ln -s /usr/local/bin/wkhtmltopdf /usr/bin`,
+        command: `sudo ln -sf /usr/local/bin/wkhtmltopdf /usr/bin`,
         mute: true
     });
     await runCommand({
-        command: `sudo ln -s /usr/local/bin/wkhtmltoimage /usr/bin`,
+        command: `sudo ln -sf /usr/local/bin/wkhtmltoimage /usr/bin`,
         mute: true
     });
 };

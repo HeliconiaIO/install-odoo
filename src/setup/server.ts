@@ -107,13 +107,13 @@ export const setupOdoo = async (version: string, odooHome: string, odooUser: str
         mute: true
     })
 
+    await createOdooDirs(odooHome, odooUser)
+
     await cloneRepo({
         repoUrl: "https://github.com/odoo/odoo.git",
         branch: version,
         targetDir: path.join(odooHome, "odoo-server"),
     });
-
-    await createOdooDirs(odooHome, odooUser)
 
 }
 
