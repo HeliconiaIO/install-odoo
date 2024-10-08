@@ -105,7 +105,7 @@ server {
 
     // Restart Nginx to apply changes
     runCommand({
-        command: 'sudo systemctl restart nginx',
+        command: 'sudo service nginx restart',
         message: `Restarting Nginx...`,
         successMessage: `Nginx restarted successfully!`,
     });
@@ -154,7 +154,7 @@ export const enableSSL = async (websiteName: string, adminEmail: string): Promis
     // Reload Nginx to apply SSL changes
     console.log(pc.magenta(`🔄 Reloading Nginx to apply SSL changes...`));
     runCommand({
-        command: 'sudo systemctl reload nginx',
+        command: 'sudo service nginx reload',
         message: 'Reloading Nginx...',
         successMessage: 'Nginx reloaded successfully!',
         mute: false,
