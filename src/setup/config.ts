@@ -59,7 +59,7 @@ export const setupOdooConfig = async (config: OdooConfigType) => {
         nginx
     } = config;
 
-    const filePath = `/etc/odoo-${odooUser}.conf`
+    const filePath = `/etc/${odooUser}-server.conf`
 
     console.log(pc.magenta(`Creating Odoo configuration file at: ${filePath}`));
 
@@ -120,7 +120,7 @@ export function createOdooStartup(odooHome: string, odooUser: string): void {
 
     // Build the content of the start.sh script
     const odooBinPath = path.join(odooHome, "odoo-server", "odoo-bin");
-    const scriptContent = `#!/bin/sh\nsudo -u ${odooUser} ${odooBinPath} --config=/etc/odoo-${odooUser}.conf`;
+    const scriptContent = `#!/bin/sh\nsudo -u ${odooUser} ${odooBinPath} --config=/etc/${odooUser}-server.conf`;
 
     // Write the content to start.sh
     try {

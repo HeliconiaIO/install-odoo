@@ -68,7 +68,7 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
 
     ** Odoo Version **: ${version}
 ** Odoo Installation Directory **: ${odooHome}
-** Odoo Configuration File **: /etc/odoo-${odooUser}.conf
+** Odoo Configuration File **: /etc/${odooUser}-server.conf
     ** Odoo User **: ${odooUser}
 
 ## PostgreSQL Configuration

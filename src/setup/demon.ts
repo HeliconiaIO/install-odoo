@@ -32,11 +32,10 @@ export async function setupDaemon(odooUser: string, odooHome: string): Promise<v
 # Description: ODOO Business Applications
 ### END INIT INFO
 
-# Set the PATH for the script execution environment
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 
-# Specify the command to start the Odoo application
-DAEMON=${venvPath}/bin/python3 ${odooBinPath}
+PATH=/opt/odoo/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+DAEMON= ${odooBinPath}
+VENV=${venvPath}/bin/python3
 NAME=${configName}
 DESC=${configName}
 
@@ -44,7 +43,7 @@ DESC=${configName}
 USER=${odooUser}
 
 # Path to the Odoo configuration file
-CONFIGFILE="/etc/odoo-${odooUser}.conf"
+CONFIGFILE="/etc/${odooUser}-server.conf"
 
 # PID file location
 PIDFILE=/var/run/\${NAME}.pid
@@ -67,25 +66,19 @@ checkpid() {
 case "\${1}" in
   start)
     echo -n "Starting \${DESC}: "
-    start-stop-daemon --start --quiet --pidfile \$PIDFILE \\
-      --chuid \$USER --background --make-pidfile \\
-      --exec \$DAEMON -- \$DAEMON_OPTS
+    start-stop-daemon --start --quiet --pidfile \$PIDFILE --chuid \$USER --background --make-pidfile --exec \$VENV \$DAEMON -- \$DAEMON_OPTS
     echo "\${NAME} started."
     ;;
   stop)
     echo -n "Stopping \${DESC}: "
-    start-stop-daemon --stop --quiet --pidfile \$PIDFILE \\
-      --oknodo
+    start-stop-daemon --stop --quiet --pidfile \$PIDFILE --oknodo
     echo "\${NAME} stopped."
     ;;
   restart|force-reload)
     echo -n "Restarting \${DESC}: "
-    start-stop-daemon --stop --quiet --pidfile \$PIDFILE \\
-      --oknodo
-    sleep 1
-    start-stop-daemon --start --quiet --pidfile \$PIDFILE \\
-      --chuid \$USER --background --make-pidfile \\
-      --exec \$DAEMON -- \$DAEMON_OPTS
+    start-stop-daemon --stop --quiet --pidfile \$PIDFILE --oknodo
+    sleep 5
+    start-stop-daemon --start --quiet --pidfile \$PIDFILE --chuid \$USER --background --make-pidfile --exec \$VENV \$DAEMON -- \$DAEMON_OPTS
     echo "\${NAME} restarted."
     ;;
   status)
