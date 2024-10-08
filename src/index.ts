@@ -5,7 +5,7 @@ import { setupDaemon } from "@setup/demon";
 import { setupNginx } from "@setup/nginx";
 import { createPostgreSQLUser, installPostgreSQL } from "@setup/postgres";
 import { installPipPackages } from "@setup/python";
-import { prepareServer, setupOdoo } from "@setup/server";
+import { prepareServer, setupOdoo, startOdooService } from "@setup/server";
 import { odooInstallSummary, odooInstallSummaryMarkdown } from "@setup/summary";
 import { installWkhtmltopdf } from "@setup/wkhtmltopdf";
 import { Command } from "commander";
@@ -203,6 +203,9 @@ program
         if (nginx) {
           await setupNginx(httpPort, geventPort, websiteName);
         }
+
+        // Start the Odoo Service
+        startOdooService();
 
         // Generate Odoo installation summary
         await odooInstallSummaryMarkdown(OdooConfig);

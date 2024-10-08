@@ -118,10 +118,20 @@ export const setupOdoo = async (version: string, odooHome: string, odooUser: str
 }
 
 
-
-// echo -e "\n---- Create custom module directory ----"
-// sudo su $OE_USER -c "mkdir $OE_HOME/custom"
-// sudo su $OE_USER -c "mkdir $OE_HOME/custom/addons"
-
-// echo -e "\n---- Setting permissions on home folder ----"
-// sudo chown -R $OE_USER:$OE_USER $OE_HOME/*
+/**
+ * Starts the Odoo server using the system service command.
+ * @returns {Promise<void>} - A promise that resolves when the Odoo server has been started.
+ */
+export const startOdooService = async (): Promise<void> => {
+    try {
+        // Run the command to start the Odoo server
+        await runCommand({
+            command: 'sudo service odoo-server start',
+            message: 'Starting Odoo service...',
+            successMessage: 'Odoo service started successfully.'
+        });
+    } catch (error) {
+        console.error('Failed to start Odoo service:', error);
+        throw new Error('Could not start Odoo service. Please check the service status.');
+    }
+};
