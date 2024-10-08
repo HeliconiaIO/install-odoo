@@ -71,7 +71,7 @@ export const prepareServer = async () => {
 const createOdooDirs = async (odooHome: string, odooUser: string) => {
     const spinner = ora({ text: 'Creating Directories for Odoo', color: 'magenta', spinner: 'circleHalves' }).start();
     await runCommand({
-        command: `sudo mkdir /var/log/${odooUser}`,
+        command: `sudo mkdir -p /var/log/${odooUser}`,
         mute: true
     })
 
