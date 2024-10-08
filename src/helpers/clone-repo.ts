@@ -1,23 +1,20 @@
 import { runCommand } from "@helpers/run-command";
 import { Presets, SingleBar } from "cli-progress";
+import fs from "fs";
 import path from 'path';
 import pc from "picocolors";
-import simpleGit from "simple-git";
+import { simpleGit, SimpleGit } from "simple-git";
 
 
-import { SimpleGit } from "simple-git";
+import { CloneRepoType } from "types";
 
-interface CloneRepoOptions {
-  repoUrl: string;            // The repository URL to clone
-  branch: string;             // The branch name to clone
-  targetDir: string;          // The target directory where the repo will be cloned
-}
 
 /**
  * Clones a specified repository to a target directory with a specific branch.
- * @param options CloneRepoOptions object containing repoUrl, branch, and targetDir.
+ * @param options CloneRepoType object containing repoUrl, branch, and targetDir.
  */
-export async function cloneRepo(options: CloneRepoOptions): Promise<void> {
+export async function cloneRepo(options: CloneRepoType): Promise<void> {
+
   const { repoUrl, branch, targetDir } = options;
   
   // Extract the repository name from the URL
@@ -26,13 +23,15 @@ export async function cloneRepo(options: CloneRepoOptions): Promise<void> {
   // Construct the full path to the target directory
   const targetPath: string = path.join(targetDir);
 
-  // Remove existing directory if it exists
-  runCommand({
-    command: `rm -rf ${targetPath}`,
-    message: `Removing existing ${repoName} at ${targetPath}`,
-    successMessage: `${repoName} removed successfully.`,
-    mute: false,
-  });
+  // Check if the directory already exists and remove it if needed
+  if (fs.existsSync(targetPath)) {
+    runCommand({
+      command: `rm -rf ${targetPath}`,
+      message: `Removing existing ${repoName} at ${targetPath}`,
+      successMessage: `${repoName} removed successfully.`,
+      mute: false,
+    });
+  }
 
   console.log(pc.magenta(`Cloning ${repoName} (branch: ${branch}) from GitHub...`));
 

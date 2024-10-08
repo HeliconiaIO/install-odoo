@@ -1,13 +1,9 @@
 import { execSync } from "child_process";
 import ora from "ora";
+import { RunCommandType } from "types";
 
 
-type RunCommandOptions = {
-  command: string;
-  message?: string;
-  successMessage?: string;
-  mute?: boolean;
-}
+
 
 /**
  * Executes a shell command with optional messaging and spinner.
@@ -16,7 +12,7 @@ type RunCommandOptions = {
  * and shows success or error messages based on the outcome of the command. 
  * It can also suppress the spinner and messages based on the provided options.
  *
- * @param {RunCommandOptions} options - The options for running the command.
+ * @param {RunCommandType} options - The options for running the command.
  * @param {string} options.command - The shell command to execute.
  * @param {string} [options.message] - Optional message to display while the command is executing.
  * @param {string} [options.successMessage] - Optional message to display upon successful execution of the command.
@@ -24,7 +20,7 @@ type RunCommandOptions = {
  * @returns {Promise<void>} A promise that resolves when the command execution is complete.
  * @throws {Error} Throws an error if the command fails to execute.
  */
-export const runCommand = async (options: RunCommandOptions) => {
+export const runCommand = async (options: RunCommandType) => {
   const { command, message, successMessage, mute = false } = options;
 
   const spinnerMessage = message || `Executing: ${command}`;
@@ -36,7 +32,7 @@ export const runCommand = async (options: RunCommandOptions) => {
   }
 
   try {
-    execSync(command, { stdio: "inherit" });
+    execSync(command, { stdio: "pipe" });
     if (!mute) {
       spinner?.succeed(spinnerSuccessMessage);
     }

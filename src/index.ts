@@ -165,8 +165,8 @@ program
       name: 'value',
       message: 'Do you want to proceed with the installation based on the above summary?',
       initial: true,
-      active: 'yes',
-      inactive: 'no'
+      active: 'Yes',
+      inactive: 'No'
     });
 
     if (confirmResponse.value) {
