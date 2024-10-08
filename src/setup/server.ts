@@ -81,12 +81,7 @@ const createOdooDirs = async (odooHome: string, odooUser: string) => {
     })
 
     await runCommand({
-        command: `sudo su ${odooUser} -c "mkdir -p ${odooHome}/custom/addons ${odooHome}/odoo-server"`,
-        mute: true
-    })
-
-    await runCommand({
-        command: `sudo chown -R ${odooUser}:${odooUser} ${odooHome}/*`,
+        command: `sudo mkdir -p ${odooHome}/custom/addons ${odooHome}/odoo-server`,
         mute: true
     })
 
@@ -114,6 +109,11 @@ export const setupOdoo = async (version: string, odooHome: string, odooUser: str
         branch: version,
         targetDir: path.join(odooHome, "odoo-server"),
     });
+
+    await runCommand({
+        command: `sudo chown -R ${odooUser}:${odooUser} ${odooHome}/*`,
+        mute: true
+    })
 
 }
 
