@@ -2,8 +2,35 @@ import { runCommand } from "@helpers/run-command"; // Adjust the import path as 
 import { execSync } from "child_process";
 import os from "os";
 import path from "path";
+import pc from "picocolors";
+
+
+/**
+ * Checks if wkhtmltopdf is installed on the system.
+ * @returns {Promise<boolean>} - Returns true if installed, false otherwise.
+ */
+export const isWkhtmltopdfInstalled = async (): Promise<boolean> => {
+    try {
+        await runCommand({
+            command: 'wkhtmltopdf --version',
+            message: 'Checking if wkhtmltopdf is installed...',
+            mute: true
+        });
+        return true;
+    } catch (error) {
+        console.error('wkhtmltopdf is not installed or not found in PATH.');
+        return false;
+    }
+};
+
 
 export const installWkhtmltopdf = async () => {
+
+    if (await isWkhtmltopdfInstalled()) {
+        console.log(pc.green(`Wkhtmltopdf is already installed.`));
+        return;
+    }
+
     // Check if the OS is Ubuntu 22.04 or 24.04
     const version = execSync('lsb_release -r -s', { encoding: 'utf-8' }).trim();
 
