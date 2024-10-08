@@ -1,4 +1,6 @@
+import { runCommand } from "@helpers/run-command";
 import { Presets, SingleBar } from "cli-progress";
+import fs from "fs";
 import path from 'path';
 import pc from "picocolors";
 import { simpleGit, SimpleGit } from "simple-git";
@@ -20,6 +22,20 @@ export async function cloneRepo(options: CloneRepoType): Promise<void> {
   
   // Construct the full path to the target directory
   const targetPath: string = path.join(targetDir);
+
+  // Check if the directory already exists and remove it if needed
+  if (fs.existsSync(targetPath)) {
+    runCommand({
+      command: `rm -rf ${targetPath}`,
+      message: `Removing existing ${repoName} at ${targetPath}`,
+      successMessage: `${repoName} removed successfully.`,
+      mute: false,
+    });
+    await runCommand({
+      command: `sudo mkdir -p ${targetPath}`,
+      mute: true
+    })
+  }
 
   console.log(pc.magenta(`Cloning ${repoName} (branch: ${branch}) from GitHub...`));
 

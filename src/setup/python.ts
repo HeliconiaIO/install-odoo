@@ -1,5 +1,25 @@
 import { runCommand } from "@helpers/run-command";
+import { execSync } from "child_process";
+import pc from "picocolors";
 
+/**
+ * Gets the Python version from the specified virtual environment.
+ * @param {string} venvPath - The path to the virtual environment.
+ * @returns {string | null} - The Python version or null if an error occurs.
+ */
+export const getPythonVersion = (odooHome: string) => {
+    const venvPath = `${odooHome}/venv`;
+    console.log(`${venvPath}/bin/python --version`)
+    try {
+        const command = `${venvPath}/bin/python --version`;
+        const version = execSync(command, { encoding: 'utf-8' }).trim();
+
+        return version;
+    } catch (error) {
+        console.error(pc.red(`Failed to get Python version from venv: ${error}`));
+        return null;
+    }
+};
 
 
 /**

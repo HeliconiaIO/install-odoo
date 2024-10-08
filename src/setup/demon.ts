@@ -34,7 +34,7 @@ export async function setupDaemon(odooUser: string, odooHome: string): Promise<v
 
 
 PATH=/opt/odoo/venv/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
-DAEMON= ${odooBinPath}
+DAEMON=${odooBinPath}
 VENV=${venvPath}/bin/python3
 NAME=${configName}
 DESC=${configName}

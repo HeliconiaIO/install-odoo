@@ -4,7 +4,8 @@ import ora from "ora";
 import path from 'path';
 import pc from "picocolors";
 
-import { prepareAddonsPath } from 'setup/config';
+import { prepareAddonsPath } from '@setup/config';
+import { getPythonVersion } from '@setup/python';
 import { OdooConfigType } from 'types';
 
 
@@ -56,6 +57,8 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
     // Use `prepareAddonsPath` to get the comma-separated addons path
     const addonsPathString = prepareAddonsPath(odooHome);
 
+    const pythonVersion = getPythonVersion(odooHome);
+
     // Convert the comma-separated addons path string into a list format
     const addonsList = addonsPathString
         .split(",")
@@ -69,7 +72,12 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
     ** Odoo Version **: ${version}
 ** Odoo Installation Directory **: ${odooHome}
 ** Odoo Configuration File **: /etc/${odooUser}-server.conf
-    ** Odoo User **: ${odooUser}
+** Odoo User **: ${odooUser}
+
+## Python Configuration
+** Version **: ${pythonVersion}
+** Virtual Enviroment **: ${odooHome}/venv
+
 
 ## PostgreSQL Configuration
     ** Install PostgreSQL **: ${installPG ? 'Yes' : 'No'}
