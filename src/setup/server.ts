@@ -9,6 +9,7 @@ const requiredPackages = [
     "git",
     "wget",
     "python3-pip",
+    "python3-venv",
     "build-essential",
     "libssl-dev",
     "libffi-dev",

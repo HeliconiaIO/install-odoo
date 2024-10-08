@@ -14,6 +14,7 @@ export async function setupDaemon(odooUser: string, odooHome: string): Promise<v
   const configName = `${odooUser}-server`;
   const daemonPath = `/etc/init.d/${configName}`;
   const odooBinPath = path.join(odooHome, "odoo-server", "odoo-bin");
+  const venvPath = `${odooHome}/venv`;
 
   console.log(pc.magenta(`* Creating Odoo daemon file at ${daemonPath}...`));
 
@@ -31,29 +32,34 @@ export async function setupDaemon(odooUser: string, odooHome: string): Promise<v
 # Description: ODOO Business Applications
 ### END INIT INFO
 
+# Set the PATH for the script execution environment
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
-DAEMON=${odooBinPath}
+
+# Specify the command to start the Odoo application
+DAEMON=${venvPath}/bin/python3 ${odooBinPath}
 NAME=${configName}
 DESC=${configName}
 
-# Specify the user name (Default: odoo).
+# Specify the user under which the Odoo service will run
 USER=${odooUser}
 
-# Specify an alternate config file (Default: /etc/odoo.conf).
-CONFIGFILE="/etc/${odooUser}.conf"
+# Path to the Odoo configuration file
+CONFIGFILE="/etc/odoo-${odooUser}.conf"
 
-# pidfile
+# PID file location
 PIDFILE=/var/run/\${NAME}.pid
 
-# Additional options that are passed to the Daemon.
+# Additional options that are passed to the Daemon
 DAEMON_OPTS="-c \$CONFIGFILE"
 
-[ -x \$DAEMON ] || exit 0
-[ -f \$CONFIGFILE ] || exit 0
+# Check if the DAEMON executable exists and CONFIGFILE is present
+[ -x \$DAEMON ] || { echo "DAEMON not found"; exit 1; }
+[ -f \$CONFIGFILE ] || { echo "CONFIGFILE not found"; exit 1; }
 
+# Function to check if the PID file exists and if the process is running
 checkpid() {
   [ -f \$PIDFILE ] || return 1
-  pid=\`cat \$PIDFILE\`
+  pid=\$(cat \$PIDFILE)
   [ -d /proc/\$pid ] && return 0
   return 1
 }
@@ -64,13 +70,13 @@ case "\${1}" in
     start-stop-daemon --start --quiet --pidfile \$PIDFILE \\
       --chuid \$USER --background --make-pidfile \\
       --exec \$DAEMON -- \$DAEMON_OPTS
-    echo "\${NAME}."
+    echo "\${NAME} started."
     ;;
   stop)
     echo -n "Stopping \${DESC}: "
     start-stop-daemon --stop --quiet --pidfile \$PIDFILE \\
       --oknodo
-    echo "\${NAME}."
+    echo "\${NAME} stopped."
     ;;
   restart|force-reload)
     echo -n "Restarting \${DESC}: "
@@ -80,15 +86,22 @@ case "\${1}" in
     start-stop-daemon --start --quiet --pidfile \$PIDFILE \\
       --chuid \$USER --background --make-pidfile \\
       --exec \$DAEMON -- \$DAEMON_OPTS
-    echo "\${NAME}."
+    echo "\${NAME} restarted."
+    ;;
+  status)
+    if checkpid; then
+      echo "\${DESC} is running."
+    else
+      echo "\${DESC} is not running."
+    fi
     ;;
   *)
-    N=/etc/init.d/\$NAME
-    echo "Usage: \$NAME {start|stop|restart|force-reload}" >&2
+    echo "Usage: \$NAME {start|stop|restart|force-reload|status}" >&2
     exit 1
     ;;
 esac
-exit 0`;
+exit 0
+`;
 
   try {
     // Write the daemon content to the specified path

@@ -183,7 +183,7 @@ program
         await createPostgreSQLUser(pgUser);
 
         // Setup Python packages
-        await installPipPackages(version);
+        await installPipPackages(version, odooHome);
 
         // Setup wkhtmltopdf
         if (wkhtmltopdf) {

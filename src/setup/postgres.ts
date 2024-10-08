@@ -69,7 +69,11 @@ export const installPostgreSQL = async () => {
         command: `sudo apt-get install -y postgresql-16`,
         message: "Installing PostgreSQL 16.",
         successMessage: "PostgreSQL 16 installed."
+    })
 
+    await runCommand({
+        command: `/etc/init.d/postgresql start`,
+        mute: true
     })
 
 };

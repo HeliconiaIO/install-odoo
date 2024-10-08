@@ -26,7 +26,7 @@ You Have Chosen the Following Options for Your Odoo Installation:
 - ${pc.bold("SSL Enabled:")} ${config.ssl ? 'Yes' : 'No'}
 - ${pc.bold("Wkhtmltopdf:")} ${config.wkhtmltopdf ? 'Yes' : 'No'}
 
-* Password info will be shared in the summary.
+* NOTE: Password info will be shared in the summary.
 `;
 };
 
@@ -68,7 +68,7 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
 
     ** Odoo Version **: ${version}
 ** Odoo Installation Directory **: ${odooHome}
-** Odoo Configuration File **: /etc/${odooUser}-server.conf
+** Odoo Configuration File **: /etc/odoo-${odooUser}.conf
     ** Odoo User **: ${odooUser}
 
 ## PostgreSQL Configuration
