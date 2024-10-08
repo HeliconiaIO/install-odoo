@@ -69,28 +69,27 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
     const summaryContent = `
 # Odoo Installation Summary
 
-    ** Odoo Version **: ${version}
-** Odoo Installation Directory **: ${odooHome}
-** Odoo Configuration File **: /etc/${odooUser}-server.conf
-** Odoo User **: ${odooUser}
+**Odoo Version**: ${version}
+**Odoo Installation Directory**: ${odooHome}
+**Odoo Configuration File**: /etc/${odooUser}-server.conf
+**Odoo User**: ${odooUser}
 
 ## Python Configuration
-** Version **: ${pythonVersion}
-** Virtual Enviroment **: ${odooHome}/venv
-
+**Version**: ${pythonVersion}
+**Virtual Enviroment**: ${odooHome}/venv
 
 ## PostgreSQL Configuration
-    ** Install PostgreSQL **: ${installPG ? 'Yes' : 'No'}
-** PostgreSQL User **: ${pgUser}
-** PostgreSQL Password **: ${pgPassword}
+**Install PostgreSQL**: ${installPG ? 'Yes' : 'No'}
+**PostgreSQL User**: ${pgUser}
+**PostgreSQL Password**: ${pgPassword}
 
 ## Odoo Admin Configuration
-    ** Super Admin Password **: ${strongPassword ? '[Generated Strong Password]' : adminPassword}
-<sub><sup>Check Odoo configuration file < /sup></sub >
+**Super Admin Password**: ${strongPassword ? '[Generated Strong Password]' : adminPassword}
+<sub><sup>Check Odoo configuration file </sup></sub>
 
 ## Network Configuration
-    ** Odoo HTTP Port **: ${httpPort}
-** Odoo Gevent Port **: ${geventPort}
+**Odoo HTTP Port**: ${httpPort}
+**Odoo Gevent Port**: ${geventPort}
 
 ## Addons Path
 The following addons paths have been configured:
@@ -98,13 +97,12 @@ ${addonsList}
 
 
 ## Service Commands
-    - ** Start Odoo **: \`sudo service ${odooUser}-server start\`
-- **Stop Odoo**: \`sudo service ${odooUser}-server stop\`
-- **Restart Odoo**: \`sudo service ${odooUser}-server restart\`
-- **Check Status**: \`sudo service ${odooUser}-server status\`
+-**Start Odoo**: \`sudo service ${odooUser}-server start\`
+-**Stop Odoo**: \`sudo service ${odooUser}-server stop\`
+-**Restart Odoo**: \`sudo service ${odooUser}-server restart\`
+-**Check Status**: \`sudo service ${odooUser}-server status\`
 
-${nginx
-            ? `
+${nginx ? `
 ## Nginx Configuration
 **Website Name**: ${websiteName}
 **Nginx Configuration File**: /etc/nginx/sites-available/${websiteName}.conf
