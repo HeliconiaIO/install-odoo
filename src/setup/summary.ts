@@ -142,6 +142,7 @@ Thank you for installing Odoo using the Odoo Install Script!\\
     spinner.succeed(`Installation summary saved to ${filePath}`);
 
     const thankYou = `
+---------------------------------------------------------------------------------------------
 Thank you for installing Odoo using the Odoo Install CLI!
 For support or feature request, feel free to ${supportLink} or write an email to ${emailLink}.
 
@@ -149,6 +150,6 @@ Heliconia Solutions
 ${websiteLink}
 `
 
-    console.log(pc.blueBright(thankYou));
+    console.log(pc.green(thankYou));
 
 };

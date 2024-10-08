@@ -9,7 +9,6 @@ import pc from "picocolors";
  */
 export const getPythonVersion = (odooHome: string) => {
     const venvPath = `${odooHome}/venv`;
-    console.log(`${venvPath}/bin/python --version`)
     try {
         const command = `${venvPath}/bin/python --version`;
         const version = execSync(command, { encoding: 'utf-8' }).trim();
