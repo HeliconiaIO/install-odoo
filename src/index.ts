@@ -163,7 +163,7 @@ program
     const confirmResponse = await prompts({
       type: 'toggle',
       name: 'value',
-      message: 'Do you want to proceed with the installation based on the above summary?',
+      message: 'Proceed with Odoo installation using the selected options?',
       initial: true,
       active: 'Yes',
       inactive: 'No'

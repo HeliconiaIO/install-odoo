@@ -6,28 +6,23 @@ import pc from "picocolors";
 
 
 /**
- * Checks if wkhtmltopdf is installed on the system.
- * @returns {Promise<boolean>} - Returns true if installed, false otherwise.
+ * Checks if `wkhtmltopdf` is installed on the system by attempting to retrieve its version.
+ * @returns {string | boolean} - Returns the version string if `wkhtmltopdf` is installed, otherwise returns `false`.
  */
-export const isWkhtmltopdfInstalled = async (): Promise<boolean> => {
+export const isWkhtmltopdfInstalled = () => {
     try {
-        await runCommand({
-            command: 'wkhtmltopdf --version',
-            message: 'Checking if wkhtmltopdf is installed...',
-            mute: true
-        });
-        return true;
+        const version = execSync('wkhtmltopdfc --version', { encoding: 'utf-8' }).trim();
+        return version;
     } catch (error) {
-        console.error('wkhtmltopdf is not installed or not found in PATH.');
         return false;
     }
 };
 
 
 export const installWkhtmltopdf = async () => {
-
-    if (await isWkhtmltopdfInstalled()) {
-        console.log(pc.green(`Wkhtmltopdf is already installed.`));
+    const wkhtmltopdfVersion = isWkhtmltopdfInstalled()
+    if (wkhtmltopdfVersion) {
+        console.log(pc.green(`${wkhtmltopdfVersion} is already installed.`));
         return;
     }
 
@@ -35,8 +30,8 @@ export const installWkhtmltopdf = async () => {
     const version = execSync('lsb_release -r -s', { encoding: 'utf-8' }).trim();
 
     if (version !== '22.04' && version !== '24.04') {
-        console.error("This script is only supported on Ubuntu 22.04 or 24.04.");
-        process.exit(1);
+        console.error(pc.red("This script is only supported on Ubuntu 22.04 or 24.04."));
+        return;
     }
 
     // Determine the architecture
