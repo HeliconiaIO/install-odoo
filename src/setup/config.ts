@@ -97,10 +97,10 @@ proxy_mode = ${nginx}
 
         await runCommand({
             command: `sudo chown ${odooUser}:${odooUser} ${filePath}`,
-            mute: true
+            message: `Configuring Odoo configuration file.`,
+            successMessage: `Odoo configuration file created successfully at: ${filePath}`
         })
 
-        console.log(pc.green(`Odoo configuration file created successfully at: ${filePath}`));
     } catch (error) {
         console.error(pc.red(`Failed to create Odoo configuration file: ${error}`));
         process.exit(1);

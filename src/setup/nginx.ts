@@ -133,8 +133,6 @@ export const enableSSL = async (websiteName: string, adminEmail: string): Promis
         execSync('which certbot', { stdio: 'ignore' });
         console.log(pc.green(`✅ Certbot is already installed.`));
     } catch (error) {
-        console.log(pc.yellow(`⚠️ Certbot not found. Installing via Snap...`));
-
         // Install Certbot using Snap
         runCommand({
             command: 'sudo snap install certbot --classic',
@@ -144,7 +142,6 @@ export const enableSSL = async (websiteName: string, adminEmail: string): Promis
     }
 
     // Obtain SSL Certificate
-    console.log(pc.magenta(`📥 Obtaining SSL certificate for ${websiteName}...`));
     runCommand({
         command: `sudo certbot --nginx -d ${websiteName} --non-interactive --agree-tos --email ${adminEmail}`,
         message: `Requesting SSL certificate for ${websiteName}...`,
@@ -152,7 +149,6 @@ export const enableSSL = async (websiteName: string, adminEmail: string): Promis
     });
 
     // Reload Nginx to apply SSL changes
-    console.log(pc.magenta(`🔄 Reloading Nginx to apply SSL changes...`));
     runCommand({
         command: 'sudo service nginx reload',
         message: 'Reloading Nginx...',

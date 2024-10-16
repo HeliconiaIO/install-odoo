@@ -3,7 +3,6 @@ import { runCommand } from "@helpers/run-command";
 import fs from 'fs';
 import ora from "ora";
 import path from "path";
-import pc from "picocolors";
 
 
 const requiredPackages = [
@@ -33,7 +32,6 @@ const requiredPackages = [
 ];
 
 const installRequiredPackages = async () => {
-    console.log(pc.magenta(`Installing Required Packages`));
     const packageList = requiredPackages.join(" ");
     await runCommand({
         command: `sudo apt-get install -y ${packageList}`,
@@ -44,8 +42,6 @@ const installRequiredPackages = async () => {
 
 
 export const prepareServer = async () => {
-
-    console.log(pc.magenta(`Preparing Server...`));
 
     await runCommand({
         command: `sudo apt-get update`,
