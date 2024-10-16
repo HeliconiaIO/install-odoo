@@ -1,5 +1,6 @@
 import { cloneRepo } from "@helpers/clone-repo";
 import { runCommand } from "@helpers/run-command";
+import fs from 'fs';
 import ora from "ora";
 import path from "path";
 import pc from "picocolors";
@@ -116,6 +117,57 @@ export const setupOdoo = async (version: string, odooHome: string, odooUser: str
     })
 
 }
+
+
+/**
+ * Enable log rotation for Odoo logs by creating a logrotate configuration based on Odoo user and home directory.
+ * @param odooUser - The user running the Odoo service.
+ * @param odooHome - The Odoo home directory (where the log files are located).
+ * @returns A promise indicating the success or failure of the log rotation setup.
+ */
+export const rotateOdooLog = async (odooUser: string, odooHome: string): Promise<void> => {
+
+    const spinner = ora({ text: 'Creating Directories for Odoo', color: 'magenta', spinner: 'circleHalves' }).start();
+
+    const logFilePath = path.join(odooHome, 'logs', 'odoo.log');
+    const logrotateConfigPath = `/etc/logrotate.d/${odooUser}`;
+    const configName = `${odooUser}-server`;
+
+    const logrotateConfig = `
+  ${logFilePath} {
+      daily
+      missingok
+      rotate 30
+      compress
+      delaycompress
+      notifempty
+      create 0640 ${odooUser} ${odooUser}
+      postrotate
+          [ -f /var/run/${configName}.pid ] && kill -USR1 \`cat /var/run/${configName}.pid\`
+      endscript
+  }`;
+
+    try {
+        // Check if the Odoo home path exists
+        if (!fs.existsSync(odooHome)) {
+            console.error(`The Odoo home path ${odooHome} does not exist.`);
+            return;
+        }
+
+        // Ensure the log directory exists inside odooHome
+        const logDirPath = path.join(odooHome, 'logs');
+        if (!fs.existsSync(logDirPath)) {
+            fs.mkdirSync(logDirPath, { recursive: true });
+        }
+
+        // Write the logrotate configuration to the specified path
+        await fs.promises.writeFile(logrotateConfigPath, logrotateConfig, { mode: 0o644 });
+        spinner?.succeed(`Configured daily Odoo log rotation at ${logrotateConfigPath}.`);
+    } catch (error) {
+        spinner?.fail(`Failed to create logrotate configuration: ${(error as Error).message}.`);
+    }
+};
+
 
 
 /**

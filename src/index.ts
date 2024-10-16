@@ -5,10 +5,11 @@ import { setupDaemon } from "@setup/demon";
 import { setupNginx } from "@setup/nginx";
 import { createPostgreSQLUser, installPostgreSQL } from "@setup/postgres";
 import { installPipPackages } from "@setup/python";
-import { prepareServer, setupOdoo, startOdooService } from "@setup/server";
+import { prepareServer, rotateOdooLog, setupOdoo, startOdooService } from "@setup/server";
 import { odooInstallSummary, odooInstallSummaryMarkdown } from "@setup/summary";
 import { installWkhtmltopdf } from "@setup/wkhtmltopdf";
 import { Command } from "commander";
+import fs from 'fs';
 import pc from "picocolors";
 import prompts from "prompts";
 import { OdooConfigType } from "types";
@@ -115,6 +116,12 @@ program
         name: "odooHome",
         message: "Enter the path for Odoo Home:",
         initial: "/odoo",
+        validate: (odooHome) => {
+          // Check if the path exists
+          return fs.existsSync(odooHome)
+            ? `The path ${odooHome} already exists. Please choose a different path.`
+            : true;
+        }
       },
       {
         type: "number",
@@ -182,11 +189,11 @@ program
         // Create PostgreSQL user
         await createPostgreSQLUser(pgUser);
 
-        // Setup Python packages
-        await installPipPackages(version, odooHome);
-
         // Setup Odoo
         await setupOdoo(version, odooHome, odooUser);
+
+        // Setup Python packages
+        await installPipPackages(odooHome);
 
         // Setup Odoo configuration
         await setupOdooConfig(OdooConfig);
@@ -203,6 +210,8 @@ program
         if (nginx) {
           await setupNginx(httpPort, geventPort, websiteName);
         }
+
+        rotateOdooLog(odooUser, odooHome);
 
         // Start the Odoo Service
         startOdooService();

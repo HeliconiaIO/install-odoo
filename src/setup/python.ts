@@ -50,22 +50,21 @@ export const createVirtualEnv = async (venvPath: string) => {
  * @param {string} odooHome - The path to the Odoo home directory containing the virtual environment.
  * @returns {Promise<void>} - A promise that resolves when the packages have been installed.
  */
-export const installPipPackages = async (version: string, odooHome: string) => {
-    const requirementsUrl = `https://github.com/odoo/odoo/raw/${version}/requirements.txt`;
+export const installPipPackages = async (odooHome: string) => {
     const venvPath = `${odooHome}/venv`;
 
     await createVirtualEnv(venvPath)
 
-    // Install packages from requirements.txt
+    // Install packages from of the odoo
     await runCommand({
-        command: `${venvPath}/bin/pip install -r ${requirementsUrl}`,
-        message: "Installing Python packages for Odoo from requirements.txt...",
-        successMessage: "Python packages from requirements.txt installed successfully.",
+        command: `cd ${odooHome}/odoo-server && ${odooHome}/venv/bin/pip install .`,
+        message: "Installing Python packages for Odoo.",
+        successMessage: "Successfully installed python packages for Odoo.",
     });
 
     // Install additional necessary packages
     await runCommand({
-        command: `${venvPath}/bin/pip install psycopg2-binary pdfminer.six num2words ofxparse dbfread ebaysdk firebase_admin pyOpenSSL`,
+        command: `${venvPath}/bin/pip install psycopg2-binary pdfminer.six dbfread ebaysdk firebase_admin`,
         mute: true
     });
 };

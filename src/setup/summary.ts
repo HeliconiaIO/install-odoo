@@ -11,7 +11,7 @@ import { OdooConfigType } from 'types';
 
 export const odooInstallSummary = (config: OdooConfigType): string => {
     return `
-You Have Chosen the Following Options for Your Odoo Installation:
+You Have Chosen the Following Options for Odoo Installation:
 - ${pc.bold("Odoo Version:")} ${config.version}
 - ${pc.bold("Odoo Home:")} ${config.odooHome}
 - ${pc.bold("Odoo User:")} ${config.odooUser}

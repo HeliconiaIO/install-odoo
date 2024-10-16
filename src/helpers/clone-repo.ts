@@ -27,8 +27,6 @@ export async function cloneRepo(options: CloneRepoType): Promise<void> {
   if (fs.existsSync(targetPath)) {
     runCommand({
       command: `rm -rf ${targetPath}`,
-      message: `Removing existing ${repoName} at ${targetPath}`,
-      successMessage: `${repoName} removed successfully.`,
       mute: false,
     });
     await runCommand({
@@ -36,8 +34,6 @@ export async function cloneRepo(options: CloneRepoType): Promise<void> {
       mute: true
     })
   }
-
-  console.log(pc.magenta(`Cloning ${repoName} (branch: ${branch}) from GitHub...`));
 
   // Set up a CLI progress bar
   const progressBar: SingleBar = new SingleBar(
