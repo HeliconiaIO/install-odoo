@@ -16,6 +16,7 @@ export interface CloneRepoType {
 
 export interface OdooConfigType {
     version?: string;
+    isEnterprise?: boolean;
     odooHome: string;
     odooUser: string;
     installPG?: boolean;

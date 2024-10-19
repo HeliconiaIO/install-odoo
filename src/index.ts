@@ -143,12 +143,14 @@ program
       },
     ]);
 
-    const { version, odooHome, odooUser, installPG, pgUser, pgPassword, strongPassword, adminPassword, httpPort, geventPort, nginx, websiteName, ssl, sslEmail, wkhtmltopdf } = response;
+    const { version, isEnterprise, odooHome, odooUser, installPG, pgUser, pgPassword, strongPassword, adminPassword, httpPort, geventPort, nginx, websiteName, ssl, sslEmail, wkhtmltopdf } = response;
 
     const OdooConfig: OdooConfigType = {
       version: version,
+      isEnterprise: isEnterprise,
       odooUser: odooUser,
       odooHome: odooHome,
+      installPG: installPG,
       pgUser: pgUser,
       pgPassword: pgPassword,
       strongPassword: strongPassword,
