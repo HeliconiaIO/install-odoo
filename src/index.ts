@@ -193,7 +193,7 @@ program
         await setupOdoo(version, odooHome, odooUser);
 
         // Setup Python packages
-        await installPipPackages(odooHome);
+        await installPipPackages(odooHome, odooUser);
 
         // Setup Odoo configuration
         await setupOdooConfig(OdooConfig);

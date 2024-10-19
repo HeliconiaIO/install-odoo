@@ -13,9 +13,8 @@ export const setupNginx = async (httpPort: number, geventPort: number, websiteNa
     try {
         // Check if Nginx is installed
         execSync('which nginx', { stdio: 'ignore' });
-        console.log(pc.green(`✅ Nginx is already installed.`));
+        console.log(pc.green(`✔ `) + `Nginx is already installed.`);
     } catch (error) {
-        console.log(pc.yellow(`⚠️ Nginx not found. Installing...`));
         // Install Nginx
         runCommand({
             command: 'sudo apt install nginx -y',
@@ -83,7 +82,7 @@ server {
     // Write configuration to sites-available
     try {
         fs.writeFileSync(sitesAvailable, nginxConfig, { encoding: 'utf-8' });
-        console.log(pc.green(`✅ Nginx configuration created at ${sitesAvailable}`));
+        console.log(pc.green(`✔ `) + `Nginx configuration created at ${sitesAvailable}`);
     } catch (error) {
         console.error(pc.red(`❌ Failed to create Nginx configuration: ${error}`));
     }
@@ -97,10 +96,10 @@ server {
 
     // Check Nginx configuration for syntax errors
     try {
-        execSync('sudo nginx -t', { stdio: 'inherit' });
-        console.log(pc.green(`✅ Nginx configuration is valid.`));
+        execSync('sudo nginx -t', { stdio: "pipe" });
+        console.log(pc.green(`✔ `) + `Nginx configuration is valid.`);
     } catch (error) {
-        console.error(pc.red(`❌ Nginx configuration test failed: ${error}`));
+        console.error(pc.red(`✘ `) + `Nginx configuration test failed: ${error}`);
     }
 
     // Restart Nginx to apply changes
@@ -110,7 +109,8 @@ server {
         successMessage: `Nginx restarted successfully!`,
     });
 
-    console.log(pc.green(`✅ Nginx is set up and serving ${websiteName} on port 80.`));
+    console.log(pc.green(`✔ `) + `Nginx is set up and serving ${websiteName} on port 80.`);
+
 }
 
 
