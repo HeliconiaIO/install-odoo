@@ -23,6 +23,12 @@ program
   .version("1.0.0")
   .description("Odoo Installer CLI")
   .action(async () => {
+
+    const onCancel = () => {
+      console.log(pc.red('You canceled the Odoo Installation CLI. Goodbye! 👋'));
+      process.exit(0);
+    };
+
     const response = await prompts([
       {
         type: "select",
@@ -141,7 +147,7 @@ program
         message: "Want to install WKHTMLTOPDF?",
         initial: true,
       },
-    ]);
+    ], { onCancel });
 
     const { version, isEnterprise, odooHome, odooUser, installPG, pgUser, pgPassword, strongPassword, adminPassword, httpPort, geventPort, nginx, websiteName, ssl, sslEmail, wkhtmltopdf } = response;
 

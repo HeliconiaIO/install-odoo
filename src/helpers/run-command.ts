@@ -37,10 +37,10 @@ export const runCommand = async (options: RunCommandType) => {
       spinner?.succeed(spinnerSuccessMessage);
     }
   } catch (error) {
-    console.error(`Failed to execute ${command}`, error);
+    console.error(`Failed to execute ${command}`, error, '\n');
     if (!mute) {
       spinner?.fail(`Failed to execute: ${command}`);
     }
-    process.exit(1);
+    return;
   }
 };

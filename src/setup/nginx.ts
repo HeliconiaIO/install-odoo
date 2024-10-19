@@ -128,17 +128,50 @@ export const enableSSL = async (websiteName: string, sslEmail: string): Promise<
         return; // Exit the function if the website name is invalid
     }
 
-    try {
-        // Check if Certbot is installed via Snap
-        execSync('which certbot', { stdio: 'ignore' });
-        console.log(pc.green(`✔ `) + `Certbot is already installed.`);
-    } catch (error) {
+    // Check if 'snap' is installed
+    const isSnapInstalled = () => {
+        try {
+            execSync('which snap', { stdio: 'ignore' });
+            return true;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    // Check if 'certbot' is installed
+    const isCertbotInstalled = () => {
+        try {
+            execSync('which certbot', { stdio: 'ignore' });
+            return true;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    if (!isSnapInstalled()) {
+        await runCommand({
+            command: 'sudo apt update && sudo apt install snapd -y',
+            message: 'Installing snap package manager...',
+            successMessage: 'Snap installed successfully.',
+        });
+    }
+
+    if (!isCertbotInstalled()) {
+
+        await runCommand({
+            command: `sudo snap install core; sudo snap refresh core`,
+            mute: true
+        });
+
         // Install Certbot using Snap
         runCommand({
             command: 'sudo snap install certbot --classic',
             message: 'Installing Certbot via Snap...',
             successMessage: 'Certbot successfully installed!',
         });
+    }
+    else {
+        console.log(pc.green(`✔ `) + `Certbot is already installed.`);
     }
 
     // Obtain SSL Certificate

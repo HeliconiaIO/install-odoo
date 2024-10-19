@@ -14,6 +14,7 @@ export const odooInstallSummary = (config: OdooConfigType): string => {
 You Have Chosen the Following Options for Odoo Installation:
 
 - ${pc.bold("Odoo Version:")} ${pc.green(config.version)}
+- ${pc.bold("Install Odoo Enterprise:")} ${pc.green(config.isEnterprise ? 'Yes' : 'No')}
 - ${pc.bold("Odoo Home:")} ${pc.green(config.odooHome)}
 - ${pc.bold("Odoo User:")} ${pc.green(config.odooUser)}
 - ${pc.bold("Install Postgres:")} ${pc.green(config.installPG ? 'Yes' : 'No')}
@@ -28,7 +29,7 @@ You Have Chosen the Following Options for Odoo Installation:
 - ${pc.bold("SSL Enabled:")} ${pc.green(config.ssl ? 'Yes' : 'No')}
 - ${pc.bold("Wkhtmltopdf:")} ${pc.green(config.wkhtmltopdf ? 'Yes' : 'No')}
 
-* NOTE: Password info will be shared in the odoo installation summary.
+${pc.blue('* NOTE: Password info will be shared in the odoo installation summary.')}
 `;
 };
 
