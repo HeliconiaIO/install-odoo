@@ -66,7 +66,7 @@ export const installPipPackages = async (odooHome: string, odooUser: string) => 
 
     // Install additional necessary packages
     await runCommand({
-        command: `${venvPath}/bin/pip install psycopg2-binary pdfminer.six dbfread ebaysdk firebase_admin lxml_html_clean`,
+        command: `${venvPath}/bin/pip install psycopg2-binary pdfminer.six ebaysdk lxml_html_clean`,
         mute: true
     });
 };

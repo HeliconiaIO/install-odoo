@@ -129,8 +129,9 @@ export const setupOdoo = async (version: string, odooHome: string, odooUser: str
 export const cloneOdooEnterprise = async (version: string, odooHome: string, odooUser: string, accessToken: string): Promise<void> => {
     const repoUrl = `https://github.com/odoo/enterprise.git`;
     const targetDir = `${odooHome}/enterprise`;
-    // Using cloneRepo to clone the Odoo Enterprise repo
+    const venvPath = `${odooHome}/venv`;
 
+    // Using cloneRepo to clone the Odoo Enterprise repo
     await runCommand({
         command: `sudo mkdir -p ${odooHome}/enterprise`,
         mute: true
@@ -147,6 +148,13 @@ export const cloneOdooEnterprise = async (version: string, odooHome: string, odo
         command: `sudo chown -R ${odooUser}:${odooUser} ${odooHome}/*`,
         mute: true
     })
+
+    // installing additional python dependancy for odoo enterprise
+    await runCommand({
+        command: `${venvPath}/bin/pip install dbfread google_auth xmlsec pyjwt phonenumbers`,
+        message: "Installing python dependancy for Odoo enterprise.",
+        successMessage: "Python dependancy for Odoo enterprise installed.",
+    });
 };
 
 
