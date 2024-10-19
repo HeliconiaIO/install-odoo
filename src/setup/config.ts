@@ -19,11 +19,18 @@ export function generateStrongAdminPassword(length: number = 16): string {
 }
 
 
-export const prepareAddonsPath = (odooHome: string): string => {
+export const prepareAddonsPath = (odooHome: string, isEnterprise?: boolean): string => {
     const serverAddonsPath = path.join(odooHome, 'odoo-server/addons');
     const customAddonsPath = path.join(odooHome, 'custom/addons');
 
-    let addonsPath = `${serverAddonsPath},${customAddonsPath}`;
+    let addonsPath = `${serverAddonsPath}`;
+
+    if (isEnterprise) {
+        const enterprisePath = path.join(odooHome, 'enterprise');
+        addonsPath += `,${enterprisePath}`;
+    }
+
+    addonsPath += `,${customAddonsPath}`;
 
     const customDirectory = path.join(odooHome, 'custom');
 
@@ -50,6 +57,7 @@ export const setupOdooConfig = async (config: OdooConfigType) => {
     const {
         odooUser,
         odooHome,
+        isEnterprise,
         pgUser,
         pgPassword,
         strongPassword,
@@ -72,7 +80,7 @@ db_user = ${pgUser}
 db_password = ${pgPassword}
 
 ; Addons path and other directories
-addons_path = ${prepareAddonsPath(odooHome)}
+addons_path = ${prepareAddonsPath(odooHome, isEnterprise)}
 data_dir = ${path.join(odooHome, ".local/share/Odoo")}
 logfile = /var/log/${odooUser}/odoo.log
 

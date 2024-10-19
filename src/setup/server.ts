@@ -114,6 +114,28 @@ export const setupOdoo = async (version: string, odooHome: string, odooUser: str
 
 }
 
+/**
+ * Clones the Odoo Enterprise repository into the specified Odoo home directory using a GitHub access token.
+ *
+ * @param {string} version - The version of Odoo Enterprise to clone.
+ * @param {string} odooHome - The path where Odoo Enterprise will be cloned.
+ * @param {string} odooUser - The user account under which Odoo will run (used for permissions).
+ * @param {string} accessToken - Your GitHub access token for authenticating the clone operation.
+ * @returns {Promise<void>} A promise that resolves when the cloning operation is complete.
+ *
+ * @throws {Error} Throws an error if the cloning operation fails.
+ */
+export const cloneOdooEnterprise = async (version: string, odooHome: string, odooUser: string, accessToken: string): Promise<void> => {
+    const repoUrl = `https://${accessToken}@github.com/odoo/enterprise.git`;
+    const targetDir = `${odooHome}/enterprise`;
+    // Using cloneRepo to clone the Odoo Enterprise repo
+    await cloneRepo({
+        repoUrl: repoUrl,
+        branch: version,
+        targetDir: targetDir,
+    });
+};
+
 
 /**
  * Enable log rotation for Odoo logs by creating a logrotate configuration based on Odoo user and home directory.

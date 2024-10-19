@@ -1,8 +1,7 @@
 import { execSync } from "child_process";
 import ora from "ora";
+import pc from "picocolors";
 import { RunCommandType } from "types";
-
-
 
 
 /**
@@ -39,7 +38,7 @@ export const runCommand = async (options: RunCommandType) => {
   } catch (error) {
     console.error(`Failed to execute ${command}`, error, '\n');
     if (!mute) {
-      spinner?.fail(`Failed to execute: ${command}`);
+      spinner?.fail(pc.red(`Failed to execute: ${command}`));
     }
     return;
   }

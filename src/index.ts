@@ -1,11 +1,11 @@
 #!/usr/bin/env -S pnpm tsx
-import { ScriptName } from "@helpers/misc";
+import { ScriptName, validateGitHubToken } from "@helpers/misc";
 import { setupOdooConfig } from "@setup/config";
 import { setupDaemon } from "@setup/demon";
 import { enableSSL, setupNginx } from "@setup/nginx";
 import { createPostgreSQLUser, installPostgreSQL } from "@setup/postgres";
 import { installPipPackages } from "@setup/python";
-import { prepareServer, rotateOdooLog, setupOdoo, startOdooService } from "@setup/server";
+import { cloneOdooEnterprise, prepareServer, rotateOdooLog, setupOdoo, startOdooService } from "@setup/server";
 import { odooInstallSummary, odooInstallSummaryMarkdown } from "@setup/summary";
 import { installWkhtmltopdf } from "@setup/wkhtmltopdf";
 import { Command } from "commander";
@@ -49,6 +49,10 @@ program
         type: (prev, values) => (values.isEnterprise ? "password" : null), // If `isEnterprise` is `true`, ask for the github access token
         name: "accessToken",
         message: "Enter Github Access Token:",
+        validate: async (token) => {
+          const isValid = await validateGitHubToken(token);
+          return isValid ? true : 'Invalid GitHub access token or no access to Odoo enterprise repository. Please try again.'; // Validation message
+        },
       },
       {
         type: "confirm",
@@ -149,11 +153,12 @@ program
       },
     ], { onCancel });
 
-    const { version, isEnterprise, odooHome, odooUser, installPG, pgUser, pgPassword, strongPassword, adminPassword, httpPort, geventPort, nginx, websiteName, ssl, sslEmail, wkhtmltopdf } = response;
+    const { version, isEnterprise, accessToken, odooHome, odooUser, installPG, pgUser, pgPassword, strongPassword, adminPassword, httpPort, geventPort, nginx, websiteName, ssl, sslEmail, wkhtmltopdf } = response;
 
     const OdooConfig: OdooConfigType = {
       version: version,
       isEnterprise: isEnterprise,
+      accessToken: accessToken,
       odooUser: odooUser,
       odooHome: odooHome,
       installPG: installPG,
@@ -199,6 +204,10 @@ program
 
         // Setup Odoo
         await setupOdoo(version, odooHome, odooUser);
+
+        if (isEnterprise) {
+          cloneOdooEnterprise(version, odooHome, odooUser, accessToken)
+        }
 
         // Setup Python packages
         await installPipPackages(odooHome, odooUser);

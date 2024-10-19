@@ -10,11 +10,18 @@ import { OdooConfigType } from 'types';
 
 
 export const odooInstallSummary = (config: OdooConfigType): string => {
+
+
+    const enterpriseInfo = config.isEnterprise && config.accessToken
+        ? `${pc.bold("- Install Odoo Enterprise:")} ${pc.green('Yes')}\n` +
+        `${pc.bold("- Github Access Token:")} ${pc.green('*'.repeat(config.accessToken.length))}`
+        : `${pc.bold("- Install Odoo Enterprise:")} ${pc.green('No')}`;
+
     return `
 You Have Chosen the Following Options for Odoo Installation:
 
 - ${pc.bold("Odoo Version:")} ${pc.green(config.version)}
-- ${pc.bold("Install Odoo Enterprise:")} ${pc.green(config.isEnterprise ? 'Yes' : 'No')}
+${enterpriseInfo}
 - ${pc.bold("Odoo Home:")} ${pc.green(config.odooHome)}
 - ${pc.bold("Odoo User:")} ${pc.green(config.odooUser)}
 - ${pc.bold("Install Postgres:")} ${pc.green(config.installPG ? 'Yes' : 'No')}
