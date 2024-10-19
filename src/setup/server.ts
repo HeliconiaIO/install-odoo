@@ -130,6 +130,12 @@ export const cloneOdooEnterprise = async (version: string, odooHome: string, odo
     const repoUrl = `https://github.com/odoo/enterprise.git`;
     const targetDir = `${odooHome}/enterprise`;
     // Using cloneRepo to clone the Odoo Enterprise repo
+
+    await runCommand({
+        command: `sudo mkdir -p ${odooHome}/enterprise`,
+        mute: true
+    })
+
     await cloneRepo({
         repoUrl: repoUrl,
         branch: version,
