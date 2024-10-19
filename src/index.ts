@@ -200,7 +200,7 @@ program
         }
 
         // Create PostgreSQL user
-        await createPostgreSQLUser(pgUser);
+        await createPostgreSQLUser(pgUser, pgPassword);
 
         // Setup Odoo
         await setupOdoo(version, odooHome, odooUser);

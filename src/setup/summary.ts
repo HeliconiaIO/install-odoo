@@ -26,11 +26,11 @@ ${enterpriseInfo}
 - ${pc.bold("PostgreSQL User:")} ${pc.green(config.pgUser)}
 - ${pc.bold("PostgreSQL Password:")} ${pc.green('*'.repeat(config.pgPassword.length))}
 - ${pc.bold("Generate Strong Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Yes' : 'No')}
-- ${pc.bold("Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Will Be Generated' : '*'.repeat(config.adminPassword.length))}
+- ${pc.bold("Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Will be generated' : '*'.repeat(config.adminPassword.length))}
 - ${pc.bold("HTTP Port:")} ${pc.green(config.httpPort)}
 - ${pc.bold("Gevent Port:")} ${pc.green(config.geventPort)}
 - ${pc.bold("Nginx Enabled:")} ${pc.green(config.nginx ? 'Yes' : 'No')}
-- ${pc.bold("Website Name:")} ${config.nginx ? pc.green(config.websiteName) : "Not provided"} 
+- ${pc.bold("Website Name:")} ${config.nginx ? pc.green(config.websiteName) : pc.green("Not provided")} 
 - ${pc.bold("SSL Enabled:")} ${pc.green(config.ssl ? 'Yes' : 'No')}
 - ${pc.bold("Wkhtmltopdf:")} ${pc.green(config.wkhtmltopdf ? 'Yes' : 'No')}
 

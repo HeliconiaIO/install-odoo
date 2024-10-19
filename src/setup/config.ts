@@ -82,7 +82,7 @@ db_password = ${pgPassword}
 ; Addons path and other directories
 addons_path = ${prepareAddonsPath(odooHome, isEnterprise)}
 data_dir = ${path.join(odooHome, ".local/share/Odoo")}
-logfile = /var/log/${odooUser}/odoo.log
+logfile = /var/log/${odooUser}/${odooUser}-server.log
 
 ; HTTP and server settings
 http_port = ${httpPort}

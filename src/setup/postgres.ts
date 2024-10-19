@@ -22,23 +22,23 @@ const getPostgreSQLVersion = async (): Promise<string | null> => {
     }
 };
 
-export const createPostgreSQLUser = async (user: string) => {
+export const createPostgreSQLUser = async (pgUser: string, pgPassword: string) => {
     try {
-        const result = execSync(`sudo -u postgres psql -t -c "SELECT 1 FROM pg_catalog.pg_user WHERE usename='${user}'"`, { encoding: 'utf-8' });
+        const result = execSync(`sudo -u postgres psql -t -c "SELECT 1 FROM pg_catalog.pg_user WHERE usename='${pgUser}'"`, { encoding: 'utf-8' });
 
         if (result.trim() === '1') {
-            console.log(pc.green(`User "${pc.underline(user)}" already exists in PostgreSQL.`));
+            console.log(pc.green(`User "${pc.underline(pgUser)}" already exists in PostgreSQL.`));
             return;
         }
     } catch (error) {
-        console.error(`Error checking if user "${user}" exists:`);
+        console.error(`Error checking if user "${pgUser}" exists:`);
         return;
     }
 
     await runCommand({
-        command: `sudo su - postgres -c "createuser -s ${user}" 2> /dev/null || true`,
+        command: `sudo su - postgres -c "psql -c \\"CREATE USER ${pgUser} WITH PASSWORD '${pgPassword}' CREATEDB;\\"" 2> /dev/null || true`,
         message: "Creating Postgres user for Odoo.",
-        successMessage: `Postgres user ${user} created.`,
+        successMessage: `Postgres user ${pgUser} created.`,
     })
 
 }
