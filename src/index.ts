@@ -231,10 +231,10 @@ program
           }
         }
 
-        rotateOdooLog(odooUser, odooHome);
+        await rotateOdooLog(odooUser, odooHome);
 
         // Start the Odoo Service
-        startOdooService();
+        await startOdooService();
 
         // Generate Odoo installation summary
         await odooInstallSummaryMarkdown(OdooConfig);

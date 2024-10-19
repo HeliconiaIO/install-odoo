@@ -10,8 +10,6 @@ import { OdooConfigType } from 'types';
 
 
 export const odooInstallSummary = (config: OdooConfigType): string => {
-
-
     const enterpriseInfo = config.isEnterprise && config.accessToken
         ? `${pc.bold("- Install Odoo Enterprise:")} ${pc.green('Yes')}\n` +
         `${pc.bold("- Github Access Token:")} ${pc.green('*'.repeat(config.accessToken.length))}`
@@ -32,7 +30,7 @@ ${enterpriseInfo}
 - ${pc.bold("HTTP Port:")} ${pc.green(config.httpPort)}
 - ${pc.bold("Gevent Port:")} ${pc.green(config.geventPort)}
 - ${pc.bold("Nginx Enabled:")} ${pc.green(config.nginx ? 'Yes' : 'No')}
-- ${pc.bold("Website Name:")} ${pc.green(config.websiteName)}
+- ${pc.bold("Website Name:")} ${config.nginx ? pc.green(config.websiteName) : "Not provided"} 
 - ${pc.bold("SSL Enabled:")} ${pc.green(config.ssl ? 'Yes' : 'No')}
 - ${pc.bold("Wkhtmltopdf:")} ${pc.green(config.wkhtmltopdf ? 'Yes' : 'No')}
 
@@ -45,6 +43,7 @@ ${pc.blue('* NOTE: Password info will be shared in the odoo installation summary
 export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
     const {
         version,
+        isEnterprise,
         odooHome,
         odooUser,
         installPG,
@@ -80,6 +79,7 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
 
     ** Odoo Version **: ${version}
 ** Odoo Installation Directory **: ${odooHome}
+${isEnterprise ? '** Odoo Enterprise Directory **: ${odooHome}/enterprise' : false}
 ** Odoo Configuration File **: /etc/${odooUser}-server.conf
     ** Odoo User **: ${odooUser}
 
@@ -88,7 +88,7 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
 ** Virtual Enviroment **: ${odooHome}/venv
 
 ## PostgreSQL Configuration
-    ** Install PostgreSQL **: ${installPG ? 'Yes' : 'No'}
+    ** Is PostgreSQL Installed **: ${installPG ? 'Yes' : 'No'}
 ** PostgreSQL User **: ${pgUser}
 ** PostgreSQL Password **: ${pgPassword}
 
