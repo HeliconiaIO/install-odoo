@@ -2,7 +2,7 @@
 import { ScriptName } from "@helpers/misc";
 import { setupOdooConfig } from "@setup/config";
 import { setupDaemon } from "@setup/demon";
-import { setupNginx } from "@setup/nginx";
+import { enableSSL, setupNginx } from "@setup/nginx";
 import { createPostgreSQLUser, installPostgreSQL } from "@setup/postgres";
 import { installPipPackages } from "@setup/python";
 import { prepareServer, rotateOdooLog, setupOdoo, startOdooService } from "@setup/server";
@@ -209,6 +209,9 @@ program
         // Setup Nginx
         if (nginx) {
           await setupNginx(httpPort, geventPort, websiteName);
+          if (ssl) {
+            enableSSL(websiteName, sslEmail)
+          }
         }
 
         rotateOdooLog(odooUser, odooHome);

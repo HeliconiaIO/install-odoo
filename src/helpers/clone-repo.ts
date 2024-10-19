@@ -27,7 +27,7 @@ export async function cloneRepo(options: CloneRepoType): Promise<void> {
   if (fs.existsSync(targetPath)) {
     runCommand({
       command: `rm -rf ${targetPath}`,
-      mute: false,
+      mute: true,
     });
     await runCommand({
       command: `sudo mkdir -p ${targetPath}`,
@@ -38,7 +38,7 @@ export async function cloneRepo(options: CloneRepoType): Promise<void> {
   // Set up a CLI progress bar
   const progressBar: SingleBar = new SingleBar(
     {
-      format: `Cloning ${repoName} (branch: ${branch}) [` + pc.magenta("{bar}") + "] {stage} {percentage}% Objects",
+      format: pc.green(`✔ `) + `Cloning ${repoName} (branch: ${branch}) [` + pc.magenta("{bar}") + "] {stage} {percentage}% Objects",
       hideCursor: true,
     },
     Presets.rect

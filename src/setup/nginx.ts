@@ -118,20 +118,20 @@ server {
 /**
  * Enables SSL for the specified website using Certbot.
  * @param websiteName - The name of the website to enable SSL for.
- * @param adminEmail - The email address for administrative notifications.
+ * @param sslEmail - The email address for administrative notifications.
  */
-export const enableSSL = async (websiteName: string, adminEmail: string): Promise<void> => {
+export const enableSSL = async (websiteName: string, sslEmail: string): Promise<void> => {
 
     // Validate website name
     if (websiteName === '_') {
-        console.error(pc.red(`❌ Website name is set as "${websiteName}". Cannot obtain SSL Certificate for "${websiteName}". You should use a real website address.`));
+        console.error(pc.red(`✘ `) + `Website name is set as "${websiteName}". Cannot obtain SSL Certificate for "${websiteName}". You should use a real website address.`);
         return; // Exit the function if the website name is invalid
     }
 
     try {
         // Check if Certbot is installed via Snap
         execSync('which certbot', { stdio: 'ignore' });
-        console.log(pc.green(`✅ Certbot is already installed.`));
+        console.log(pc.green(`✔ `) + `Certbot is already installed.`);
     } catch (error) {
         // Install Certbot using Snap
         runCommand({
@@ -143,7 +143,7 @@ export const enableSSL = async (websiteName: string, adminEmail: string): Promis
 
     // Obtain SSL Certificate
     runCommand({
-        command: `sudo certbot --nginx -d ${websiteName} --non-interactive --agree-tos --email ${adminEmail}`,
+        command: `sudo certbot --nginx -d ${websiteName} --non-interactive --agree-tos --email ${sslEmail}`,
         message: `Requesting SSL certificate for ${websiteName}...`,
         successMessage: `SSL certificate for ${websiteName} obtained successfully!`,
     });
@@ -155,6 +155,5 @@ export const enableSSL = async (websiteName: string, adminEmail: string): Promis
         successMessage: 'Nginx reloaded successfully!',
         mute: false,
     });
-
-    console.log(pc.green(`✅ SSL is enabled for ${websiteName}.`));
+    console.error(pc.red(`✔ `) + `SSL is enabled for ${websiteName}.`);
 }
