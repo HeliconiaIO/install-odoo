@@ -61,8 +61,6 @@ export const setupOdooConfig = async (config: OdooConfigType) => {
 
     const filePath = `/etc/${odooUser}-server.conf`
 
-    console.log(pc.magenta(`Creating Odoo configuration file at: ${filePath}`));
-
     // Define the configuration content
     const configContent = `
 [options]

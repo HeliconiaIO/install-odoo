@@ -16,8 +16,6 @@ export async function setupDaemon(odooUser: string, odooHome: string): Promise<v
   const odooBinPath = path.join(odooHome, "odoo-server", "odoo-bin");
   const venvPath = `${odooHome}/venv`;
 
-  console.log(pc.magenta(`* Creating Odoo daemon file at ${daemonPath}...`));
-
   // Daemon script content
   const daemonContent = `#!/bin/sh
 ### BEGIN INIT INFO
@@ -108,13 +106,12 @@ exit 0
 
     await runCommand({
       command: `sudo update-rc.d ${odooUser}-server defaults`,
-      mute: true
+      message: `Creating Odoo demon file.`,
+      successMessage: `Odoo Odoo demon created successfully at: ${daemonPath}`
     })
 
-    console.log(pc.green(`✅ Daemon script ${daemonPath} created successfully!`));
-
   } catch (error) {
-    console.error(pc.red(`❌ Failed to create the daemon script: ${error}`));
+    console.error(pc.red(`✘ `) + `Failed to create the daemon script: ${error}`);
     process.exit(1);
   }
 }

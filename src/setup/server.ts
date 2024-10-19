@@ -126,8 +126,9 @@ export const rotateOdooLog = async (odooUser: string, odooHome: string): Promise
     const spinner = ora({ text: 'Creating Directories for Odoo', color: 'magenta', spinner: 'circleHalves' }).start();
 
     const logFilePath = path.join(odooHome, 'logs', 'odoo.log');
-    const logrotateConfigPath = `/etc/logrotate.d/${odooUser}`;
     const configName = `${odooUser}-server`;
+    const logrotateConfigPath = `/etc/logrotate.d/${configName}`;
+
 
     const logrotateConfig = `
   ${logFilePath} {

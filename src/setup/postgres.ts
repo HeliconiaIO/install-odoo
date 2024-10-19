@@ -34,7 +34,6 @@ export const createPostgreSQLUser = async (user: string) => {
         console.error(`Error checking if user "${user}" exists:`);
         return;
     }
-    console.log(pc.magenta(`Creating "${pc.underline(user)}" user for PostgreSQL...`));
 
     await runCommand({
         command: `sudo su - postgres -c "createuser -s ${user}" 2> /dev/null || true`,

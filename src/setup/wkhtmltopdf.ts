@@ -11,7 +11,7 @@ import pc from "picocolors";
  */
 export const isWkhtmltopdfInstalled = () => {
     try {
-        const version = execSync('wkhtmltopdfc --version', { encoding: 'utf-8' }).trim();
+        const version = execSync('wkhtmltopdfc --version', { encoding: 'utf-8', stdio: "pipe" }).trim();
         return version;
     } catch (error) {
         return false;
