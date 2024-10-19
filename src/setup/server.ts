@@ -127,13 +127,14 @@ export const setupOdoo = async (version: string, odooHome: string, odooUser: str
  * @throws {Error} Throws an error if the cloning operation fails.
  */
 export const cloneOdooEnterprise = async (version: string, odooHome: string, odooUser: string, accessToken: string): Promise<void> => {
-    const repoUrl = `https://${accessToken}@github.com/odoo/enterprise.git`;
+    const repoUrl = `https://github.com/odoo/enterprise.git`;
     const targetDir = `${odooHome}/enterprise`;
     // Using cloneRepo to clone the Odoo Enterprise repo
     await cloneRepo({
         repoUrl: repoUrl,
         branch: version,
         targetDir: targetDir,
+        accessToken: accessToken
     });
 
     await runCommand({

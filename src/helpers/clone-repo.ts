@@ -4,18 +4,14 @@ import fs from "fs";
 import path from 'path';
 import pc from "picocolors";
 import { simpleGit, SimpleGit } from "simple-git";
-
-
 import { CloneRepoType } from "types";
-
 
 /**
  * Clones a specified repository to a target directory with a specific branch.
- * @param options CloneRepoType object containing repoUrl, branch, and targetDir.
+ * @param options CloneRepoType object containing repoUrl, branch, targetDir, and accessToken.
  */
-export async function cloneRepo(options: CloneRepoType): Promise<void> {
-
-  const { repoUrl, branch, targetDir } = options;
+export async function cloneRepo(options: CloneRepoType & { accessToken?: string }): Promise<void> {
+  const { repoUrl, branch, targetDir, accessToken } = options;
 
   // Extract the repository name from the URL
   const repoName = path.basename(repoUrl, ".git");
@@ -32,7 +28,7 @@ export async function cloneRepo(options: CloneRepoType): Promise<void> {
     await runCommand({
       command: `sudo mkdir -p ${targetPath}`,
       mute: true
-    })
+    });
   }
 
   // Set up a CLI progress bar
@@ -64,10 +60,15 @@ export async function cloneRepo(options: CloneRepoType): Promise<void> {
   const git: SimpleGit = simpleGit(gitOptions);
 
   try {
+    // If accessToken is provided, modify the repoUrl to include the token
+    const clonedRepoUrl = accessToken
+      ? repoUrl.replace(/^https?:\/\//, `https://${accessToken}:x-oauth-basic@`)
+      : repoUrl;
+
     // Clone the specified repo with the given branch and depth
-    await git.clone(repoUrl, targetPath, [`--branch=${branch}`, "--depth=1"]);
+    await git.clone(clonedRepoUrl, targetPath, [`--branch=${branch}`, "--depth=1"]);
     progressBar.stop();
-    console.log(pc.green(`✔ `) + `Successfully cloned ${repoName}(branch: ${branch}) to ${targetPath}`);
+    console.log(pc.green(`✔ `) + `Successfully cloned ${repoName} (branch: ${branch}) to ${targetPath}`);
   } catch (error) {
     progressBar.stop();
     console.error(pc.red(`✘ `) + `Failed to clone ${repoName}: ${error}`);
