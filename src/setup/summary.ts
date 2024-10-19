@@ -12,22 +12,23 @@ import { OdooConfigType } from 'types';
 export const odooInstallSummary = (config: OdooConfigType): string => {
     return `
 You Have Chosen the Following Options for Odoo Installation:
-- ${pc.bold("Odoo Version:")} ${config.version}
-- ${pc.bold("Odoo Home:")} ${config.odooHome}
-- ${pc.bold("Odoo User:")} ${config.odooUser}
-- ${pc.bold("Install Postgres:")} ${config.installPG ? 'Yes' : 'No'}
-- ${pc.bold("PostgreSQL User:")} ${config.pgUser}
-- ${pc.bold("PostgreSQL Password:")} ${'*'.repeat(config.pgPassword.length)} 
-- ${pc.bold("Generate Strong Odoo Super Admin Password:")} ${config.strongPassword ? 'Yes' : 'No'}
-- ${pc.bold("Odoo Super Admin Password:")} ${config.strongPassword ? 'Will Be Generated' : '*'.repeat(config.adminPassword.length)}
-- ${pc.bold("HTTP Port:")} ${config.httpPort}
-- ${pc.bold("Gevent Port:")} ${config.geventPort}
-- ${pc.bold("Nginx Enabled:")} ${config.nginx ? 'Yes' : 'No'}
-- ${pc.bold("Website Name:")} ${config.websiteName}
-- ${pc.bold("SSL Enabled:")} ${config.ssl ? 'Yes' : 'No'}
-- ${pc.bold("Wkhtmltopdf:")} ${config.wkhtmltopdf ? 'Yes' : 'No'}
 
-* NOTE: Password info will be shared in the summary.
+- ${pc.bold("Odoo Version:")} ${pc.green(config.version)}
+- ${pc.bold("Odoo Home:")} ${pc.green(config.odooHome)}
+- ${pc.bold("Odoo User:")} ${pc.green(config.odooUser)}
+- ${pc.bold("Install Postgres:")} ${pc.green(config.installPG ? 'Yes' : 'No')}
+- ${pc.bold("PostgreSQL User:")} ${pc.green(config.pgUser)}
+- ${pc.bold("PostgreSQL Password:")} ${pc.green('*'.repeat(config.pgPassword.length))}
+- ${pc.bold("Generate Strong Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Yes' : 'No')}
+- ${pc.bold("Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Will Be Generated' : '*'.repeat(config.adminPassword.length))}
+- ${pc.bold("HTTP Port:")} ${pc.green(config.httpPort)}
+- ${pc.bold("Gevent Port:")} ${pc.green(config.geventPort)}
+- ${pc.bold("Nginx Enabled:")} ${pc.green(config.nginx ? 'Yes' : 'No')}
+- ${pc.bold("Website Name:")} ${pc.green(config.websiteName)}
+- ${pc.bold("SSL Enabled:")} ${pc.green(config.ssl ? 'Yes' : 'No')}
+- ${pc.bold("Wkhtmltopdf:")} ${pc.green(config.wkhtmltopdf ? 'Yes' : 'No')}
+
+* NOTE: Password info will be shared in the odoo installation summary.
 `;
 };
 
@@ -69,27 +70,27 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
     const summaryContent = `
 # Odoo Installation Summary
 
-**Odoo Version**: ${version}
-**Odoo Installation Directory**: ${odooHome}
-**Odoo Configuration File**: /etc/${odooUser}-server.conf
-**Odoo User**: ${odooUser}
+    ** Odoo Version **: ${version}
+** Odoo Installation Directory **: ${odooHome}
+** Odoo Configuration File **: /etc/${odooUser}-server.conf
+    ** Odoo User **: ${odooUser}
 
 ## Python Configuration
-**Version**: ${pythonVersion}
-**Virtual Enviroment**: ${odooHome}/venv
+    ** Version **: ${pythonVersion}
+** Virtual Enviroment **: ${odooHome}/venv
 
 ## PostgreSQL Configuration
-**Install PostgreSQL**: ${installPG ? 'Yes' : 'No'}
-**PostgreSQL User**: ${pgUser}
-**PostgreSQL Password**: ${pgPassword}
+    ** Install PostgreSQL **: ${installPG ? 'Yes' : 'No'}
+** PostgreSQL User **: ${pgUser}
+** PostgreSQL Password **: ${pgPassword}
 
 ## Odoo Admin Configuration
-**Super Admin Password**: ${strongPassword ? '[Generated Strong Password]' : adminPassword}
-<sub><sup>Check Odoo configuration file </sup></sub>
+    ** Super Admin Password **: ${strongPassword ? '[Generated Strong Password]' : adminPassword}
+<sub><sup>Check Odoo configuration file < /sup></sub >
 
 ## Network Configuration
-**Odoo HTTP Port**: ${httpPort}
-**Odoo Gevent Port**: ${geventPort}
+    ** Odoo HTTP Port **: ${httpPort}
+** Odoo Gevent Port **: ${geventPort}
 
 ## Addons Path
 The following addons paths have been configured:
@@ -97,7 +98,7 @@ ${addonsList}
 
 
 ## Service Commands
--**Start Odoo**: \`sudo service ${odooUser}-server start\`
+    -** Start Odoo **: \`sudo service ${odooUser}-server start\`
 -**Stop Odoo**: \`sudo service ${odooUser}-server stop\`
 -**Restart Odoo**: \`sudo service ${odooUser}-server restart\`
 -**Check Status**: \`sudo service ${odooUser}-server status\`
