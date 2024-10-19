@@ -59,7 +59,8 @@ export const prepareServer = async () => {
 
     await runCommand({
         command: `sudo npm install -g rtlcss less less-plugin-clean-css`,
-        mute: true
+        message: "Installing Nodejs packages..",
+        successMessage: "Nodejs packages installed."
     })
 
 }
@@ -134,6 +135,11 @@ export const cloneOdooEnterprise = async (version: string, odooHome: string, odo
         branch: version,
         targetDir: targetDir,
     });
+
+    await runCommand({
+        command: `sudo chown -R ${odooUser}:${odooUser} ${odooHome}/*`,
+        mute: true
+    })
 };
 
 

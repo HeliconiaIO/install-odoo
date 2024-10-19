@@ -206,7 +206,7 @@ program
         await setupOdoo(version, odooHome, odooUser);
 
         if (isEnterprise) {
-          cloneOdooEnterprise(version, odooHome, odooUser, accessToken)
+          await cloneOdooEnterprise(version, odooHome, odooUser, accessToken)
         }
 
         // Setup Python packages
