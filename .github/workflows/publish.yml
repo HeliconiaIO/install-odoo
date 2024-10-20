@@ -38,4 +38,5 @@ jobs:
           cp ../package.json .  # Copy package.json
           git add .
           git commit -m "Updated odoo-install cli"
-          git push origin main
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/HeliconiaIO/install-odoo.git main
+
