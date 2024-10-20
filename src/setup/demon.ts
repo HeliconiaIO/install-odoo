@@ -115,6 +115,3 @@ exit 0
     process.exit(1);
   }
 }
-
-
-// createOdooDaemon("odoo", "/opt/odoo");

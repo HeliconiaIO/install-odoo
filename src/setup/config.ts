@@ -18,7 +18,17 @@ export function generateStrongAdminPassword(length: number = 16): string {
         .join('');
 }
 
-
+/**
+ * Prepares the addons path string by combining the default Odoo server addons, custom addons,
+ * and optionally the enterprise addons if `isEnterprise` is enabled.
+ *
+ * @param {string} odooHome - The base directory of the Odoo installation.
+ * @param {boolean} [isEnterprise] - Optional flag to include the enterprise addons path if set to true.
+ *
+ * @returns {string} - A comma-separated string of the addons paths.
+ *
+ * @throws {Error} - Throws an error if the custom addons directory cannot be accessed.
+ */
 export const prepareAddonsPath = (odooHome: string, isEnterprise?: boolean): string => {
     const serverAddonsPath = path.join(odooHome, 'odoo-server/addons');
     const customAddonsPath = path.join(odooHome, 'custom/addons');
@@ -52,6 +62,17 @@ export const prepareAddonsPath = (odooHome: string, isEnterprise?: boolean): str
     return addonsPath;
 };
 
+/**
+ * Sets up the Odoo configuration by creating the necessary configuration files and directories
+ * based on the provided `config` object. This function handles paths, user settings, and services
+ * required for Odoo installation.
+ *
+ * @param {OdooConfigType} config - The configuration object containing all the details for setting up Odoo.
+ *
+ * @returns {Promise<void>} - Returns a promise that resolves when the configuration setup is complete.
+ *
+ * @throws {Error} - Throws an error if any step in the configuration process fails (e.g., file system issues).
+ */
 export const setupOdooConfig = async (config: OdooConfigType) => {
 
     const {

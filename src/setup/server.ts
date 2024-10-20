@@ -31,6 +31,17 @@ const requiredPackages = [
     "gdebi"
 ];
 
+
+/**
+ * Installs the required system packages for Odoo setup.
+ *
+ * This function checks for the presence of necessary packages and installs them if they are missing.
+ * It may require elevated permissions to install certain packages.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the required packages have been successfully installed.
+ *
+ * @throws {Error} - Throws an error if the installation of the required packages fails.
+ */
 const installRequiredPackages = async () => {
     const packageList = requiredPackages.join(" ");
     await runCommand({
@@ -40,7 +51,17 @@ const installRequiredPackages = async () => {
     })
 };
 
-
+/**
+ * Prepares the server environment for Odoo installation.
+ *
+ * This function performs necessary checks and configurations required to set up the server for running Odoo.
+ * It may involve tasks such as verifying required software installations, setting up directories, and
+ * ensuring the correct permissions are in place for the Odoo user.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the server is successfully prepared.
+ *
+ * @throws {Error} - Throws an error if any of the preparation steps fail.
+ */
 export const prepareServer = async () => {
 
     await runCommand({
@@ -65,7 +86,20 @@ export const prepareServer = async () => {
 
 }
 
-
+/**
+ * Creates the necessary directories for Odoo installation.
+ *
+ * This function sets up the required directory structure within the specified Odoo home path,
+ * ensuring that the directories have the appropriate ownership and permissions for the Odoo user.
+ * The directories may include locations for addons, logs, and configuration files as needed by Odoo.
+ *
+ * @param {string} odooHome - The base directory where Odoo is installed.
+ * @param {string} odooUser - The user under which Odoo will run, used for setting directory permissions.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the directories have been created successfully.
+ *
+ * @throws {Error} - Throws an error if the directory creation fails or if permission issues occur.
+ */
 const createOdooDirs = async (odooHome: string, odooUser: string) => {
     const spinner = ora({ text: 'Creating Directories for Odoo', color: 'magenta', spinner: 'circleHalves' }).start();
     await runCommand({
@@ -86,7 +120,22 @@ const createOdooDirs = async (odooHome: string, odooUser: string) => {
     spinner?.succeed("Directories for Odoo Created Successfully.");
 }
 
-
+/**
+ * Sets up the Odoo installation environment.
+ *
+ * This function handles the complete setup process for Odoo, including
+ * creating necessary directories, installing required packages, and
+ * configuring the Odoo server for the specified version and user.
+ *
+ * @param {string} version - The version of Odoo to be installed (e.g., "14.0", "15.0").
+ * @param {string} odooHome - The directory where Odoo will be installed.
+ * @param {string} odooUser - The user under which the Odoo server will run.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the setup process is complete.
+ *
+ * @throws {Error} - Throws an error if any part of the setup process fails,
+ *                   such as directory creation, package installation, or configuration issues.
+ */
 export const setupOdoo = async (version: string, odooHome: string, odooUser: string) => {
 
     await runCommand({
@@ -211,8 +260,19 @@ export const rotateOdooLog = async (odooUser: string, odooHome: string): Promise
 
 
 /**
- * Starts the Odoo server using the system service command.
- * @returns {Promise<void>} - A promise that resolves when the Odoo server has been started.
+ * Starts the Odoo service.
+ *
+ * This function initiates the Odoo server process, ensuring that the server
+ * runs as expected. It may check for prerequisites before attempting to start
+ * the service, such as ensuring that the required directories exist and
+ * that the server configuration is valid.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the Odoo service
+ *                            has been successfully started.
+ *
+ * @throws {Error} - Throws an error if the service fails to start due to
+ *                   configuration issues, missing dependencies, or other
+ *                   unexpected problems.
  */
 export const startOdooService = async (): Promise<void> => {
     try {

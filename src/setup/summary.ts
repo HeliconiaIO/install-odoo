@@ -8,7 +8,20 @@ import { prepareAddonsPath } from '@setup/config';
 import { getPythonVersion } from '@setup/python';
 import { OdooConfigType } from 'types';
 
-
+/**
+ * Generates a summary of the Odoo installation configuration.
+ *
+ * This function takes the configuration details for the Odoo installation
+ * and generates a formatted string summarizing the chosen options, such as
+ * the Odoo version, installation directory, user settings, PostgreSQL
+ * configuration, network settings, and more.
+ *
+ * @param {OdooConfigType} config - The configuration object containing the
+ *                                   details of the Odoo installation.
+ * 
+ * @returns {string} - A formatted string representing the summary of the
+ *                     Odoo installation options.
+ */
 export const odooInstallSummary = (config: OdooConfigType): string => {
     // Enterprise info
     const enterpriseInfo = config.isEnterprise && config.accessToken
@@ -49,7 +62,21 @@ ${pc.blue('* NOTE: Password info will be shared in the odoo installation summary
 };
 
 
-// Function to generate and store the installation summary
+/**
+ * Generates a Markdown summary of the Odoo installation configuration.
+ *
+ * This asynchronous function constructs a detailed summary of the Odoo
+ * installation options in Markdown format, including information such as
+ * Odoo version, installation paths, PostgreSQL configuration, network settings,
+ * and more. The summary is then saved to a Markdown file in the specified
+ * Odoo home directory.
+ *
+ * @param {OdooConfigType} config - The configuration object containing the
+ *                                   details of the Odoo installation.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the summary has 
+ *                            been successfully saved to a file.
+ */
 export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
     const {
         version,
@@ -106,11 +133,11 @@ ${isEnterprise ? `**Odoo Enterprise Directory**: ${odooHome}/enterprise` : ''}
 ## PostgreSQL Configuration
 **Is PostgreSQL Installed**: ${installPG ? 'Yes' : 'No'}
 ${installPG ? `**PostgreSQL User**: ${pgUser}\n**PostgreSQL Password**: ${'*'.repeat(pgPassword.length)}` : ''}
-<sub><sup>Check Odoo configuration file postgres user password< /sup></sub>
+<sub><sup>Check Odoo configuration file postgres user password</sup></sub>
 
 ## Odoo Admin Configuration
 **Super Admin Password**: ${strongPassword ? '[Generated Strong Password]' : '*'.repeat(adminPassword.length)}
-<sub><sup>Check Odoo configuration file for super admin password< /sup></sub>
+<sub><sup>Check Odoo configuration file for super admin password</sup></sub>
 
 ## Network Configuration
 **Odoo HTTP Port**: ${httpPort}

@@ -2,7 +2,13 @@ import { runCommand } from "@helpers/run-command";
 import { execSync } from "child_process"; // todo: replace with runCommand
 import pc from "picocolors";
 
-
+/**
+ * Checks whether PostgreSQL is installed on the system.
+ *
+ * @returns {Promise<boolean>} - Returns a promise that resolves to `true` if PostgreSQL is installed, otherwise `false`.
+ *
+ * @throws {Error} - Throws an error if the command execution to check PostgreSQL fails.
+ */
 const isPostgreSQLInstalled = async (): Promise<boolean> => {
     try {
         const result = execSync('pg_lsclusters', { stdio: 'ignore' });
@@ -12,6 +18,14 @@ const isPostgreSQLInstalled = async (): Promise<boolean> => {
     }
 };
 
+
+/**
+ * Retrieves the installed PostgreSQL version.
+ *
+ * @returns {Promise<string | null>} - Returns a promise that resolves to the PostgreSQL version string if installed, or `null` if not found.
+ *
+ * @throws {Error} - Throws an error if the command execution to retrieve the PostgreSQL version fails.
+ */
 const getPostgreSQLVersion = async (): Promise<string | null> => {
     try {
         const result = execSync('pg_config --version', { encoding: 'utf-8' });
@@ -22,6 +36,17 @@ const getPostgreSQLVersion = async (): Promise<string | null> => {
     }
 };
 
+
+/**
+ * Creates a new PostgreSQL user with the specified username and password.
+ *
+ * @param {string} pgUser - The username for the new PostgreSQL user.
+ * @param {string} pgPassword - The password for the new PostgreSQL user.
+ *
+ * @returns {Promise<void>} - Returns a promise that resolves when the user is successfully created.
+ *
+ * @throws {Error} - Throws an error if the command execution to create the PostgreSQL user fails.
+ */
 export const createPostgreSQLUser = async (pgUser: string, pgPassword: string) => {
     try {
         const result = execSync(`sudo -u postgres psql -t -c "SELECT 1 FROM pg_catalog.pg_user WHERE usename='${pgUser}'"`, { encoding: 'utf-8' });
@@ -43,6 +68,13 @@ export const createPostgreSQLUser = async (pgUser: string, pgPassword: string) =
 
 }
 
+/**
+ * Installs PostgreSQL on the system if it is not already installed.
+ *
+ * @returns {Promise<void>} - Returns a promise that resolves when the installation is complete.
+ *
+ * @throws {Error} - Throws an error if the PostgreSQL installation fails.
+ */
 export const installPostgreSQL = async () => {
     if (await isPostgreSQLInstalled()) {
         const pgVersion = await getPostgreSQLVersion()

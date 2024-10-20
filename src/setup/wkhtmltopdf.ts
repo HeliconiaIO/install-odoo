@@ -6,8 +6,14 @@ import pc from "picocolors";
 
 
 /**
- * Checks if `wkhtmltopdf` is installed on the system by attempting to retrieve its version.
- * @returns {string | boolean} - Returns the version string if `wkhtmltopdf` is installed, otherwise returns `false`.
+ * Checks if wkhtmltopdf is installed on the system.
+ *
+ * This function attempts to execute the `wkhtmltopdf` command to retrieve its
+ * version. If the command executes successfully, the version is returned. 
+ * If it fails (e.g., wkhtmltopdf is not installed), the function returns false.
+ *
+ * @returns {string | false} - Returns the version of wkhtmltopdf if installed,
+ *                             or false if it is not installed.
  */
 export const isWkhtmltopdfInstalled = () => {
     try {
@@ -18,7 +24,16 @@ export const isWkhtmltopdfInstalled = () => {
     }
 };
 
-
+/**
+ * Installs wkhtmltopdf on the system.
+ *
+ * This function executes the necessary commands to download and install
+ * wkhtmltopdf. It ensures that the installation is performed with the required
+ * permissions and provides feedback on the installation process.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the installation is complete.
+ *                            Throws an error if the installation fails.
+ */
 export const installWkhtmltopdf = async () => {
     const wkhtmltopdfVersion = isWkhtmltopdfInstalled()
     if (wkhtmltopdfVersion) {

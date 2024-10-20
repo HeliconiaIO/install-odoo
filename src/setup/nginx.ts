@@ -4,10 +4,17 @@ import fs from 'fs';
 import pc from 'picocolors';
 
 /**
- * Checks if Nginx is installed. If not, installs it and creates a new configuration file for the given website.
- * @param httpPort - The HTTP port to use for the Odoo server.
- * @param geventPort - The gevent port for websocket connections.
- * @param websiteName - The name of the website (used in config and server_name).
+ * Configures Nginx as a reverse proxy for Odoo by setting up the server blocks and forwarding
+ * traffic from the specified `websiteName` domain to the Odoo instance. It maps the given
+ * HTTP and Gevent ports to Nginx.
+ *
+ * @param {number} httpPort - The port Odoo uses for HTTP requests (default: 8069).
+ * @param {number} geventPort - The port Odoo uses for long-polling (Gevent) requests (default: 8072).
+ * @param {string} websiteName - The domain name for which the Nginx server block is configured.
+ *
+ * @returns {Promise<void>} - Returns a promise that resolves when the Nginx configuration is complete.
+ *
+ * @throws {Error} - Throws an error if Nginx configuration or restart fails.
  */
 export const setupNginx = async (httpPort: number, geventPort: number, websiteName: string): Promise<void> => {
     try {
@@ -116,9 +123,16 @@ server {
 
 
 /**
- * Enables SSL for the specified website using Certbot.
- * @param websiteName - The name of the website to enable SSL for.
- * @param sslEmail - The email address for administrative notifications.
+ * Enables SSL for the given website using Certbot by configuring SSL certificates.
+ * This function installs Certbot (if not already installed), requests an SSL certificate
+ * for the specified `websiteName`, and sets up the necessary configuration.
+ *
+ * @param {string} websiteName - The domain name for which SSL needs to be enabled.
+ * @param {string} sslEmail - The email address to be associated with the SSL certificate.
+ *
+ * @returns {Promise<void>} - Returns a promise that resolves when SSL setup is complete.
+ *
+ * @throws {Error} - Throws an error if Certbot installation or SSL certificate request fails.
  */
 export const enableSSL = async (websiteName: string, sslEmail: string): Promise<void> => {
 

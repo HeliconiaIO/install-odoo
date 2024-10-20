@@ -7,8 +7,18 @@ import { simpleGit, SimpleGit } from "simple-git";
 import { CloneRepoType } from "types";
 
 /**
- * Clones a specified repository to a target directory with a specific branch.
- * @param options CloneRepoType object containing repoUrl, branch, targetDir, and accessToken.
+ * Clones a specified repository to a target directory with a specific branch. Optionally, 
+ * a GitHub access token can be used to clone private repositories.
+ *
+ * @param {CloneRepoType & { accessToken?: string }} options - The options object containing details for cloning the repository.
+ * @param {string} options.repoUrl - The URL of the repository to clone.
+ * @param {string} options.branch - The branch of the repository to clone.
+ * @param {string} options.targetDir - The target directory where the repository will be cloned.
+ * @param {string} [options.accessToken] - Optional GitHub access token used for cloning private repositories.
+ *
+ * @returns {Promise<void>} - Returns a promise that resolves when the repository is successfully cloned.
+ *
+ * @throws {Error} - Throws an error if the cloning process fails.
  */
 export async function cloneRepo(options: CloneRepoType & { accessToken?: string }): Promise<void> {
   const { repoUrl, branch, targetDir, accessToken } = options;

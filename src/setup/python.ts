@@ -3,9 +3,12 @@ import { execSync } from "child_process";
 import pc from "picocolors";
 
 /**
- * Gets the Python version from the specified virtual environment.
- * @param {string} venvPath - The path to the virtual environment.
- * @returns {string | null} - The Python version or null if an error occurs.
+ * Retrieves the Python version used in the specified Odoo home directory.
+ *
+ * @param {string} odooHome - The path to the Odoo home directory.
+ * @returns {string} - Returns the Python version as a string.
+ *
+ * @throws {Error} - Throws an error if unable to determine the Python version.
  */
 export const getPythonVersion = (odooHome: string) => {
     const venvPath = `${odooHome}/venv`;
@@ -22,11 +25,14 @@ export const getPythonVersion = (odooHome: string) => {
 
 
 /**
- * Create a virtual environment in the specified directory.
- * 
- * @param {string} odooHome - The path to the Odoo home directory where the virtual environment will be created.
- * @param {string} odooUser - The name of the Odoo user.
- * @returns {Promise<void>} - A promise that resolves when the virtual environment has been created.
+ * Creates a Python virtual environment at the specified path for the given Odoo user.
+ *
+ * @param {string} venvPath - The path where the virtual environment will be created.
+ * @param {string} odooUser - The Odoo user for whom the virtual environment is being created.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the virtual environment has been created successfully.
+ *
+ * @throws {Error} - Throws an error if the virtual environment creation fails.
  */
 export const createVirtualEnv = async (venvPath: string, odooUser: string) => {
 
@@ -46,11 +52,14 @@ export const createVirtualEnv = async (venvPath: string, odooUser: string) => {
 
 
 /**
- * Install Python packages for Odoo in the virtual environment.
- * 
- * @param {string} odooHome - The path to the Odoo home directory containing the virtual environment.
- * @param {string} odooUser - The name of the Odoo user.
- * @returns {Promise<void>} - A promise that resolves when the packages have been installed.
+ * Installs required Python packages using pip for the specified Odoo installation.
+ *
+ * @param {string} odooHome - The path to the Odoo installation directory.
+ * @param {string} odooUser - The Odoo user under which the pip packages should be installed.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the pip packages have been successfully installed.
+ *
+ * @throws {Error} - Throws an error if the installation of pip packages fails.
  */
 export const installPipPackages = async (odooHome: string, odooUser: string) => {
     const venvPath = `${odooHome}/venv`;
