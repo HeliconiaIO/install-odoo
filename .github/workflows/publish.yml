@@ -1,0 +1,41 @@
+name: Publish Dist
+
+on:
+  push:
+    branches:
+      - main  # Change this if your default branch is different
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.12.2'  # Your specified Node.js version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build dist
+        run: npm run build  # This runs the build command from your package.json
+
+      - name: Publish dist to public repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided token for authentication
+        run: |
+          git config --global user.name 'atularvind'
+          git config --global user.email 'atul.surficle@gmail.com'
+          git clone https://github.com/HeliconiaIO/install-odoo.git
+          cd install-odoo
+          rm -rf *  # Clear previous contents
+          cp -R ../dist/* .  # Copy the dist files
+          cp ../README.md .  # Copy README.md
+          cp ../package.json .  # Copy package.json
+          git add .
+          git commit -m "Updated odoo-install cli"
+          git push origin main
