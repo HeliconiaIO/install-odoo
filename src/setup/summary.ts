@@ -41,16 +41,22 @@ export const odooInstallSummary = (config: OdooConfigType): string => {
         `${pc.bold("- SSL Email:")} ${pc.green(config.sslEmail || "Not provided")}\n`
         : `${pc.bold("- SSL Enabled:")} ${pc.green(config.ssl ? 'Yes' : 'No')}\n`;
 
+    const installPostgresInfo = `${pc.bold("- Install Postgres:")} ${pc.green(config.installPG ? 'Yes' : 'No')}\n`;
+
+    // PostgreSQL user and password info (only if installPG is true)
+    const pgUserInfo = config.installPG
+        ? `${pc.bold("- PostgreSQL User:")} ${pc.green(config.pgUser)}\n` +
+        `${pc.bold("- PostgreSQL Password:")} ${pc.green('*'.repeat(config.pgPassword.length))}\n`
+        : '';
+
+
     return `
 You Have Chosen the Following Options for Odoo Installation:
 
 - ${pc.bold("Odoo Version:")} ${pc.green(config.version)}
 ${enterpriseInfo}- ${pc.bold("Odoo Home:")} ${pc.green(config.odooHome)}
 - ${pc.bold("Odoo User:")} ${pc.green(config.odooUser)}
-- ${pc.bold("Install Postgres:")} ${pc.green(config.installPG ? 'Yes' : 'No')}
-- ${pc.bold("PostgreSQL User:")} ${pc.green(config.pgUser)}
-- ${pc.bold("PostgreSQL Password:")} ${pc.green('*'.repeat(config.pgPassword.length))}
-- ${pc.bold("Generate Strong Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Yes' : 'No')}
+${installPostgresInfo}${pgUserInfo}- ${pc.bold("Generate Strong Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Yes' : 'No')}
 - ${pc.bold("Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Will be generated' : '*'.repeat(config.adminPassword.length))}
 - ${pc.bold("HTTP Port:")} ${pc.green(config.httpPort)}
 - ${pc.bold("Gevent Port:")} ${pc.green(config.geventPort)}
