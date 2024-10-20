@@ -1,4 +1,9 @@
-# Install Odoo Source
+▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄▖▗▄▖ ▗▖   ▗▖        ▗▄▖ ▗▄▄▄  ▗▄▖  ▗▄▖      ▗▄▄▖▗▖   ▗▄▄▄▖
+  █  ▐▛▚▖▐▌▐▌     █ ▐▌ ▐▌▐▌   ▐▌       ▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌    ▐▌   ▐▌     █  
+  █  ▐▌ ▝▜▌ ▝▀▚▖  █ ▐▛▀▜▌▐▌   ▐▌       ▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌    ▐▌   ▐▌     █  
+▗▄█▄▖▐▌  ▐▌▗▄▄▞▘  █ ▐▌ ▐▌▐▙▄▄▖▐▙▄▄▖    ▝▚▄▞▘▐▙▄▄▀▝▚▄▞▘▝▚▄▞▘    ▝▚▄▄▖▐▙▄▄▖▗▄█▄▖
+
+# Install Odoo
 
 A command-line tool to install Odoo with various configuration options.
 
@@ -9,6 +14,12 @@ You can easily install Odoo using the following command:
 ```bash
 npx install-odoo
 ```
+
+## Prerequisites
+
+Before you begin, ensure you have the following:
+
+- An Ubuntu 22.04 or 24.04 server.
 
 ## Usage
 
@@ -88,4 +99,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-For any issues or feature requests, feel free to reach out to us at [Heliconia Solutions](https://www.heliconia.io/contact) or email us at [hello@heliconia.io](mailto:hello@heliconia.io).
+If you encounter any problems or have suggestions for improvements, please submit an [issue](https://github.com/HeliconiaIO/install-odoo/issues) on our GitHub repository. Your feedback is valuable to us!
+
+## About Author
+
+**Heliconia Solution Pvt. Ltd.**  
+[Odoo Partner and Implementor](https://www.heliconia.io)
+Specializes in end-to-end Odoo implementation, development, integration, customization, and support. We ensure seamless onboarding, agile development, and reliable post-implementation support, empowering businesses worldwide to optimize operations and drive growth with tailored ERP solutions across industries.
