@@ -26,7 +26,7 @@ jobs:
 
       - name: Publish dist to public repo
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided token for authentication
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Automatically provided token for authentication
         run: |
           git config --global user.name 'atularvind'
           git config --global user.email 'atul.surficle@gmail.com'
@@ -38,5 +38,5 @@ jobs:
           cp ../package.json .  # Copy package.json
           git add .
           git commit -m "Updated odoo-install cli"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/HeliconiaIO/install-odoo.git main
+          git push https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/HeliconiaIO/install-odoo.git main
 
