@@ -33,7 +33,8 @@ jobs:
           git clone https://github.com/HeliconiaIO/install-odoo.git
           cd install-odoo
           rm -rf *  # Clear previous contents
-          cp -R ../dist/* .  # Copy the dist files
+          mkdir dist  # Create the dist directory
+          cp -R ../dist/* ./dist/  # Copy the dist files into the dist directory
           cp ../README.md .  # Copy README.md
           cp ../package.json .  # Copy package.json
           git add .
