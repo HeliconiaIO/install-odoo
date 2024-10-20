@@ -1,4 +1,5 @@
 import { runCommand } from "@helpers/run-command";
+import { isPostgreSQLInstalled } from "@setup/postgres";
 import crypto from 'crypto';
 import fs from "fs";
 import path from "path";
@@ -90,15 +91,17 @@ export const setupOdooConfig = async (config: OdooConfigType) => {
 
     const filePath = `/etc/${odooUser}-server.conf`
 
+    const pgInstalled = await isPostgreSQLInstalled()
+
     // Define the configuration content
     const configContent = `
 [options]
 ; General settings
 admin_passwd = ${strongPassword ? generateStrongAdminPassword(16) : adminPassword}
-db_host = localhost
-db_port = 5432
-db_user = ${pgUser}
-db_password = ${pgPassword}
+db_host = ${pgInstalled ? 'localhost' : ''}
+db_port = ${pgInstalled ? '5432' : ''}
+db_user = ${pgInstalled ? pgUser : ''}
+db_password = ${pgInstalled ? pgPassword : ''}
 
 ; Addons path and other directories
 addons_path = ${prepareAddonsPath(odooHome, isEnterprise)}

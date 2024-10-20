@@ -9,7 +9,7 @@ import pc from "picocolors";
  *
  * @throws {Error} - Throws an error if the command execution to check PostgreSQL fails.
  */
-const isPostgreSQLInstalled = async (): Promise<boolean> => {
+export const isPostgreSQLInstalled = async (): Promise<boolean> => {
     try {
         const result = execSync('pg_lsclusters', { stdio: 'ignore' });
         return true;

@@ -5,8 +5,18 @@ import pc from "picocolors";
 
 import { emailLink, supportLink, websiteLink } from '@helpers/misc';
 import { prepareAddonsPath } from '@setup/config';
+import { isPostgreSQLInstalled } from '@setup/postgres';
 import { getPythonVersion } from '@setup/python';
 import { OdooConfigType } from 'types';
+
+const pgWarning = (configFilePath: string) => `
+---------------------------------------------------------------------------------------------
+⚠️ Attention: PostgreSQL Not Installed
+It seems that PostgreSQL is not installed or configured on your system.
+To proceed, please configure the database settings in the Odoo configuration file located at: ${configFilePath}
+---------------------------------------------------------------------------------------------    
+    
+`
 
 /**
  * Generates a summary of the Odoo installation configuration.
@@ -22,7 +32,7 @@ import { OdooConfigType } from 'types';
  * @returns {string} - A formatted string representing the summary of the
  *                     Odoo installation options.
  */
-export const odooInstallSummary = (config: OdooConfigType): string => {
+export const odooInstallSummary = async (config: OdooConfigType): Promise<string> => {
     // Enterprise info
     const enterpriseInfo = config.isEnterprise && config.accessToken
         ? `${pc.bold("- Install Odoo Enterprise:")} ${pc.green('Yes')}\n` +
@@ -41,10 +51,13 @@ export const odooInstallSummary = (config: OdooConfigType): string => {
         `${pc.bold("- SSL Email:")} ${pc.green(config.sslEmail || "Not provided")}\n`
         : `${pc.bold("- SSL Enabled:")} ${pc.green(config.ssl ? 'Yes' : 'No')}\n`;
 
+
+    const pgInstalled = await isPostgreSQLInstalled();
+    const configPath = `/etc/${config.odooUser}-server.conf`;
     const installPostgresInfo = `${pc.bold("- Install Postgres:")} ${pc.green(config.installPG ? 'Yes' : 'No')}\n`;
 
     // PostgreSQL user and password info (only if installPG is true)
-    const pgUserInfo = config.installPG
+    const pgUserInfo = pgInstalled
         ? `${pc.bold("- PostgreSQL User:")} ${pc.green(config.pgUser)}\n` +
         `${pc.bold("- PostgreSQL Password:")} ${pc.green('*'.repeat(config.pgPassword.length))}\n`
         : '';
@@ -60,9 +73,9 @@ ${installPostgresInfo}${pgUserInfo}- ${pc.bold("Generate Strong Odoo Super Admin
 - ${pc.bold("Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Will be generated' : '*'.repeat(config.adminPassword.length))}
 - ${pc.bold("HTTP Port:")} ${pc.green(config.httpPort)}
 - ${pc.bold("Gevent Port:")} ${pc.green(config.geventPort)}
-${nginxInfo}${sslInfo}
-- ${pc.bold("Wkhtmltopdf:")} ${pc.green(config.wkhtmltopdf ? 'Yes' : 'No')}
+${nginxInfo}${sslInfo}- ${pc.bold("Wkhtmltopdf:")} ${pc.green(config.wkhtmltopdf ? 'Yes' : 'No')}
 
+${!pgInstalled ? pgWarning(configPath) : ''}
 ${pc.blue('* NOTE: Password info will be shared in the odoo installation summary.')}
 `;
 };
@@ -121,6 +134,8 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
         .map((path) => `- ${path}`)
         .join("\n");
 
+    const configPath = `/etc/${config.odooUser}-server.conf`;
+
     // Constructing the summary content with addons path as a formatted list
     const summaryContent = `
 # Odoo Installation Summary
@@ -129,7 +144,7 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
 **Odoo Installation Directory**: ${odooHome}
 ${isEnterprise ? `**Odoo Enterprise Directory**: ${odooHome}/enterprise` : ''}
 
-**Odoo Configuration File**: /etc/${odooUser}-server.conf
+**Odoo Configuration File**: ${configPath}
 **Odoo User**: ${odooUser}
 
 ## Python Configuration
@@ -191,12 +206,15 @@ Thank you for installing Odoo using the Odoo Install Script!
         spinner.fail(`Failed to save installation summary: ${error}`);
     }
 
+    const configFilePath = `/etc/${odooUser}-server.conf`
+
+
+
     // Output a thank you message
     const thankYou = `
 ---------------------------------------------------------------------------------------------
 
 Thank you for installing Odoo using the Odoo Install CLI!
-
 For support or feature request, feel free to ${supportLink} or write an email to ${emailLink}.
 
 Heliconia Solutions
@@ -204,6 +222,10 @@ ${websiteLink}
 
 ---------------------------------------------------------------------------------------------
 `;
+
+    if (await isPostgreSQLInstalled()) {
+        console.log(pc.red(pgWarning(configPath)));
+    }
 
     console.log(pc.green(thankYou));
 };

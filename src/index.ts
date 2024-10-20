@@ -3,7 +3,7 @@ import { ScriptName, validateGitHubToken } from "@helpers/misc";
 import { setupOdooConfig } from "@setup/config";
 import { setupDaemon } from "@setup/demon";
 import { enableSSL, setupNginx } from "@setup/nginx";
-import { createPostgreSQLUser, installPostgreSQL } from "@setup/postgres";
+import { createPostgreSQLUser, installPostgreSQL, isPostgreSQLInstalled } from "@setup/postgres";
 import { installPipPackages } from "@setup/python";
 import { cloneOdooEnterprise, prepareServer, rotateOdooLog, setupOdoo, startOdooService } from "@setup/server";
 import { odooInstallSummary, odooInstallSummaryMarkdown } from "@setup/summary";
@@ -28,6 +28,8 @@ program
       console.log(pc.red('You canceled the Odoo Installation CLI. Goodbye! 👋'));
       process.exit(0);
     };
+
+    const isPgInstalled = await isPostgreSQLInstalled()
 
     const response = await prompts([
       {
@@ -109,13 +111,13 @@ program
         initial: "odoo",
       },
       {
-        type: (prev, values) => (values.installPG ? "text" : null), // If `installPG` is `true`, ask to for PG User
+        type: (prev, values) => (isPgInstalled ? "text" : null), // If `installPG` is `true`, ask to for PG User
         name: "pgUser",
         message: "Enter the Name of the PostgreSQL user for Odoo:",
         initial: (prev, values) => values.odooUser || "", // Set initial value to odooUser if it's provided
       },
       {
-        type: (prev, values) => (values.installPG ? "password" : null), // If `installPG` is `true`, ask to for PG User
+        type: (prev, values) => (isPgInstalled ? "password" : null), // If `installPG` is `true`, ask to for PG User
         name: "pgPassword",
         message: `Enter the Password for PostgreSQL user for Odoo:`,
         validate: (value) =>
@@ -176,7 +178,7 @@ program
     }
 
 
-    const summary = odooInstallSummary(OdooConfig);
+    const summary = await odooInstallSummary(OdooConfig);
 
     console.log(pc.magentaBright(summary));
 
@@ -200,7 +202,9 @@ program
         }
 
         // Create PostgreSQL user
-        await createPostgreSQLUser(pgUser, pgPassword);
+        if (await isPostgreSQLInstalled()) {
+          await createPostgreSQLUser(pgUser, pgPassword);
+        }
 
         // Setup Odoo
         await setupOdoo(version, odooHome, odooUser);
