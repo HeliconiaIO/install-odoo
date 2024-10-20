@@ -1,4 +1,4 @@
-# Install Odoo
+# Install Odoo Source
 
 A command-line tool to install Odoo with various configuration options.
 
