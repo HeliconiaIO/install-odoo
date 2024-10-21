@@ -21,6 +21,8 @@ export interface OdooConfigType {
     odooHome: string;
     odooUser: string;
     installPG?: boolean;
+    pgHost: string;
+    pgPort: number;
     pgUser: string;
     pgPassword: string;
     strongPassword: boolean;

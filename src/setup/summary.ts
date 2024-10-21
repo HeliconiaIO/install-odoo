@@ -5,16 +5,16 @@ import pc from "picocolors";
 
 import { emailLink, supportLink, websiteLink } from '@helpers/misc';
 import { prepareAddonsPath } from '@setup/config';
-import { isPostgreSQLInstalled } from '@setup/postgres';
+import { checkPostgresConnection } from '@setup/postgres';
 import { getPythonVersion } from '@setup/python';
 import { OdooConfigType } from 'types';
 
 const pgWarning = (configFilePath: string) => `
----------------------------------------------------------------------------------------------
-⚠️ Attention: PostgreSQL Not Installed
-It seems that PostgreSQL is not installed or configured on your system.
-Once Odoo installation finished, Please configure the database settings in the Odoo configuration file located at: ${configFilePath}
----------------------------------------------------------------------------------------------    
+-----------------------------------------------------------------------------------
+⚠️ Attention: PostgreSQL Not Installed or Unreachable
+Unable to connect to PostgreSQL using the provided host, username, and password. 
+Please ensure that you configure the database settings in the Odoo configuration file located at ${configFilePath} after installation, and restart the Odoo service.
+-----------------------------------------------------------------------------------
     
 `
 
@@ -51,33 +51,33 @@ export const odooInstallSummary = async (config: OdooConfigType): Promise<string
         `${pc.bold("- SSL Email:")} ${pc.green(config.sslEmail || "Not provided")}\n`
         : `${pc.bold("- SSL Enabled:")} ${pc.green(config.ssl ? 'Yes' : 'No')}\n`;
 
-
-    const pgInstalled = await isPostgreSQLInstalled();
     const configPath = `/etc/${config.odooUser}-server.conf`;
-    const installPostgresInfo = `${pc.bold("- Install Postgres:")} ${pc.green(config.installPG ? 'Yes' : 'No')}\n`;
 
-    // PostgreSQL user and password info (only if installPG is true)
-    const pgUserInfo = pgInstalled
-        ? `${pc.bold("- PostgreSQL User:")} ${pc.green(config.pgUser)}\n` +
-        `${pc.bold("- PostgreSQL Password:")} ${pc.green('*'.repeat(config.pgPassword.length))}\n`
-        : '';
-
-
-    return `
+    let summary = `
 You Have Chosen the Following Options for Odoo Installation:
 
 - ${pc.bold("Odoo Version:")} ${pc.green(config.version)}
 ${enterpriseInfo}- ${pc.bold("Odoo Home:")} ${pc.green(config.odooHome)}
 - ${pc.bold("Odoo User:")} ${pc.green(config.odooUser)}
-${installPostgresInfo}${pgUserInfo}- ${pc.bold("Generate Strong Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Yes' : 'No')}
+- ${pc.bold("Generate Strong Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Yes' : 'No')}
 - ${pc.bold("Odoo Super Admin Password:")} ${pc.green(config.strongPassword ? 'Will be generated' : '*'.repeat(config.adminPassword.length))}
 - ${pc.bold("HTTP Port:")} ${pc.green(config.httpPort)}
 - ${pc.bold("Gevent Port:")} ${pc.green(config.geventPort)}
-${nginxInfo}${sslInfo}- ${pc.bold("Wkhtmltopdf:")} ${pc.green(config.wkhtmltopdf ? 'Yes' : 'No')}
+- ${pc.bold("Install Postgres:")} ${pc.green(config.installPG ? 'Yes' : 'No')}
+- ${pc.bold("PostgreSQL Host:")} ${pc.green(config.pgHost)}
+- ${pc.bold("PostgreSQL Port:")} ${pc.green(config.pgPort)}
+- ${pc.bold("PostgreSQL User:")} ${pc.green(config.pgUser)}
+- ${pc.bold("PostgreSQL Password:")} ${pc.green('*'.repeat(config.pgPassword.length))}
+- ${pc.bold("Wkhtmltopdf:")} ${pc.green(config.wkhtmltopdf ? 'Yes' : 'No')}
+${nginxInfo}${sslInfo}
 
-${!pgInstalled ? pgWarning(configPath) : ''}
 ${pc.blue('* NOTE: Password info will be shared in the odoo installation summary.')}
 `;
+    if (!config.installPG && !await checkPostgresConnection(config.pgHost, config.pgPort, config.pgUser, config.pgPassword)) {
+        summary += `${pc.red(pgWarning(configPath))}`
+    }
+
+    return summary
 };
 
 
@@ -103,6 +103,8 @@ export const odooInstallSummaryMarkdown = async (config: OdooConfigType) => {
         odooHome,
         odooUser,
         installPG,
+        pgHost,
+        pgPort,
         pgUser,
         pgPassword,
         strongPassword,
@@ -153,7 +155,10 @@ ${isEnterprise ? `**Odoo Enterprise Directory**: ${odooHome}/enterprise` : ''}
 
 ## PostgreSQL Configuration
 **Is PostgreSQL Installed**: ${installPG ? 'Yes' : 'No'}
-${installPG ? `**PostgreSQL User**: ${pgUser}\n**PostgreSQL Password**: ${'*'.repeat(pgPassword.length)}` : ''}
+**PostgreSQL Host**: ${pgHost}
+**PostgreSQL Port**: ${pgPort}
+**PostgreSQL User**: ${pgUser}
+**PostgreSQL Password**: ${'*'.repeat(pgPassword.length)}
 <sub><sup>Check Odoo configuration file postgres user password</sup></sub>
 
 ## Odoo Admin Configuration
@@ -223,7 +228,7 @@ ${websiteLink}
 ---------------------------------------------------------------------------------------------
 `;
 
-    if (await isPostgreSQLInstalled()) {
+    if (!installPG && await !checkPostgresConnection(pgHost, pgPort, pgUser, pgPassword)) {
         console.log(pc.red(pgWarning(configPath)));
     }
 

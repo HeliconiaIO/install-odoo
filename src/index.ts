@@ -3,7 +3,7 @@ import { ScriptName, validateGitHubToken } from "@helpers/misc";
 import { setupOdooConfig } from "@setup/config";
 import { setupDaemon } from "@setup/demon";
 import { enableSSL, setupNginx } from "@setup/nginx";
-import { createPostgreSQLUser, installPostgreSQL, isPostgreSQLInstalled } from "@setup/postgres";
+import { createPostgreSQLUser, installPostgreSQL } from "@setup/postgres";
 import { installPipPackages } from "@setup/python";
 import { cloneOdooEnterprise, prepareServer, rotateOdooLog, setupOdoo, startOdooService } from "@setup/server";
 import { odooInstallSummary, odooInstallSummaryMarkdown } from "@setup/summary";
@@ -25,7 +25,7 @@ program
   .action(async () => {
 
     const onCancel = () => {
-      console.log(pc.red('You canceled the Odoo Installation CLI. Goodbye! 👋'));
+      console.log(pc.red('Odoo Installation Cancelled. Goodbye! 👋'));
       process.exit(0);
     };
 
@@ -55,9 +55,83 @@ program
         },
       },
       {
+        type: "text",
+        name: "odooHome",
+        message: "Enter the path for Odoo home directory:",
+        initial: "/odoo",
+        validate: (odooHome) => {
+          // Check if the path exists
+          return fs.existsSync(odooHome)
+            ? `The path ${odooHome} already exists. Please choose a different path.`
+            : true;
+        }
+      },
+      {
+        type: "text",
+        name: "odooUser",
+        message: "Enter the Name of the system user for Odoo:",
+        initial: "odoo",
+      },
+      {
+        type: "confirm",
+        name: "strongPassword",
+        message: "Want to generate random strong odoo super admin password?",
+        initial: true,
+      },
+      {
+        type: (prev) => (prev === false ? "password" : null),
+        name: "adminPassword",
+        message: "Enter the Odoo super admin password:",
+        validate: (value) =>
+          value.length < 8 ? `Password must be at least 8 characters.` : true,
+      },
+      {
+        type: "number",
+        name: "httpPort",
+        message: "Set the default Odoo port:",
+        initial: 8069,
+      },
+      {
+        type: "number",
+        name: "geventPort",
+        message: "Set the default Odoo port for websocket:",
+        initial: 8072,
+      },
+      {
         type: "confirm",
         name: "installPG",
         message: "Want to install Postgres 16?",
+        initial: true,
+      },
+      {
+        type: "text",
+        name: "pgHost",
+        message: "Enter the hostname of the PostgreSQL:",
+        initial: "localhost",
+      },
+      {
+        type: "number",
+        name: "pgPort",
+        message: "Enter the port of the PostgreSQL:",
+        initial: 5432,
+      },
+      {
+        type: "text",
+        name: "pgUser",
+        message: "Enter the name of the PostgreSQL user:",
+        initial: (prev, values) => values.installPG && values.odooUser || "", // Set initial value to odooUser if it's provided
+      },
+      {
+        type: "password",
+        name: "pgPassword",
+        message: `Enter the password for PostgreSQL user:`,
+        validate: (value) =>
+          value.length < 8 ? `Password must be at least 8 characters.` : true,
+      },
+      {
+        type: "confirm",
+        name: "wkhtmltopdf",
+        message: "Want to install WKHTMLTOPDF?",
         initial: true,
       },
       {
@@ -89,71 +163,9 @@ program
           return emailRegex.test(value) ? true : "Please enter a valid email address.";
         }
       },
-      {
-        type: "confirm",
-        name: "strongPassword",
-        message: "Want to generate random strong odoo super admin password?",
-        initial: true,
-      },
-      {
-        type: (prev) => (prev === false ? "password" : null),
-        name: "adminPassword",
-        message: "Enter the Odoo super admin password:",
-        validate: (value) =>
-          value.length < 8 ? `Password must be at least 8 characters.` : true,
-      },
-      {
-        type: "text",
-        name: "odooUser",
-        message: "Enter the Name of the system user for Odoo:",
-        initial: "odoo",
-      },
-      {
-        type: "text",
-        name: "pgUser",
-        message: "Enter the Name of the PostgreSQL user for Odoo:",
-        initial: (prev, values) => values.odooUser || "", // Set initial value to odooUser if it's provided
-      },
-      {
-        type: "password",
-        name: "pgPassword",
-        message: `Enter the Password for PostgreSQL user for Odoo:`,
-        validate: (value) =>
-          value.length < 8 ? `Password must be at least 8 characters.` : true,
-      },
-      {
-        type: "text",
-        name: "odooHome",
-        message: "Enter the path for Odoo Home:",
-        initial: "/odoo",
-        validate: (odooHome) => {
-          // Check if the path exists
-          return fs.existsSync(odooHome)
-            ? `The path ${odooHome} already exists. Please choose a different path.`
-            : true;
-        }
-      },
-      {
-        type: "number",
-        name: "httpPort",
-        message: "Set the default Odoo port:",
-        initial: 8069,
-      },
-      {
-        type: "number",
-        name: "geventPort",
-        message: "Set the default Odoo port for websocket:",
-        initial: 8072,
-      },
-      {
-        type: "confirm",
-        name: "wkhtmltopdf",
-        message: "Want to install WKHTMLTOPDF?",
-        initial: true,
-      },
     ], { onCancel });
 
-    const { version, isEnterprise, accessToken, odooHome, odooUser, installPG, pgUser, pgPassword, strongPassword, adminPassword, httpPort, geventPort, nginx, websiteName, ssl, sslEmail, wkhtmltopdf } = response;
+    const { version, isEnterprise, accessToken, odooHome, odooUser, installPG, pgHost, pgPort, pgUser, pgPassword, strongPassword, adminPassword, httpPort, geventPort, nginx, websiteName, ssl, sslEmail, wkhtmltopdf } = response;
 
     const OdooConfig: OdooConfigType = {
       version: version,
@@ -162,6 +174,8 @@ program
       odooUser: odooUser,
       odooHome: odooHome,
       installPG: installPG,
+      pgHost: pgHost,
+      pgPort: pgPort,
       pgUser: pgUser,
       pgPassword: pgPassword,
       strongPassword: strongPassword,
@@ -200,7 +214,7 @@ program
         }
 
         // Create PostgreSQL user
-        if (await isPostgreSQLInstalled()) {
+        if (pgHost === 'localhost') {
           await createPostgreSQLUser(pgUser, pgPassword);
         }
 
@@ -249,7 +263,7 @@ program
         process.exit(1);
       }
     } else {
-      console.log(pc.red('Installation cancelled by the user.'));
+      console.log(pc.red('Odoo Installation Cancelled. Goodbye! 👋'));
       process.exit(0);
     }
 

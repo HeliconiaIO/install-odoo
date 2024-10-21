@@ -1,5 +1,6 @@
 import { runCommand } from "@helpers/run-command";
 import { execSync } from "child_process"; // todo: replace with runCommand
+import { Client } from 'pg';
 import pc from "picocolors";
 
 /**
@@ -15,6 +16,44 @@ export const isPostgreSQLInstalled = async (): Promise<boolean> => {
         return true;
     } catch (error) {
         return false;
+    }
+};
+
+
+/**
+ * Checks the connection to a PostgreSQL database using the provided host, user, password, and port.
+ *
+ * @param {string} pgHost - The hostname or IP address of the PostgreSQL server.
+ * @param {string} pgUser - The PostgreSQL username to authenticate with.
+ * @param {string} pgPassword - The PostgreSQL password for the provided user.
+ * @param {number} pgPort - The port on which the PostgreSQL server is running (default: 5432).
+ * 
+ * @returns {Promise<boolean>} - Resolves to `true` if the connection is successful, otherwise `false`.
+ * 
+ * @throws {Error} - Throws an error if the connection attempt encounters a problem.
+ *
+ */
+export const checkPostgresConnection = async (
+    pgHost: string,
+    pgPort: number,
+    pgUser: string,
+    pgPassword: string,
+): Promise<boolean> => {
+    const client = new Client({
+        host: pgHost,
+        port: pgPort,  // Add the port to the connection configuration
+        user: pgUser,
+        password: pgPassword,
+        database: 'postgres',  // Connect to the default database
+    });
+
+    try {
+        await client.connect(); // Attempt to connect to the PostgreSQL server
+        return true; // Connection succeeded
+    } catch (error) {
+        return false; // Connection failed
+    } finally {
+        await client.end(); // Close the client connection
     }
 };
 
