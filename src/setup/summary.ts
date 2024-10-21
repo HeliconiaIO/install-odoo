@@ -13,7 +13,7 @@ const pgWarning = (configFilePath: string) => `
 ---------------------------------------------------------------------------------------------
 ⚠️ Attention: PostgreSQL Not Installed
 It seems that PostgreSQL is not installed or configured on your system.
-To proceed, please configure the database settings in the Odoo configuration file located at: ${configFilePath}
+Once Odoo installation finished, Please configure the database settings in the Odoo configuration file located at: ${configFilePath}
 ---------------------------------------------------------------------------------------------    
     
 `

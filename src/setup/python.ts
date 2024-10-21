@@ -52,23 +52,24 @@ export const createVirtualEnv = async (venvPath: string, odooUser: string) => {
 
 
 /**
- * Installs required Python packages using pip for the specified Odoo installation.
- *
+ * Installs the required Python pip packages for Odoo, including both community and enterprise dependencies.
+ * 
  * @param {string} odooHome - The path to the Odoo installation directory.
- * @param {string} odooUser - The Odoo user under which the pip packages should be installed.
- *
- * @returns {Promise<void>} - A promise that resolves when the pip packages have been successfully installed.
- *
- * @throws {Error} - Throws an error if the installation of pip packages fails.
+ * @param {string} odooUser - The system user under which Odoo is running.
+ * @param {boolean} isEnterprise - Indicates whether to install Odoo Enterprise dependencies (true) or only community dependencies (false).
+ * 
+ * @returns {Promise<void>} A promise that resolves when the installation is complete.
+ * 
+ * @throws Will throw an error if the installation process fails.
  */
-export const installPipPackages = async (odooHome: string, odooUser: string) => {
+export const installPipPackages = async (odooHome: string, odooUser: string, isEnterprise: boolean) => {
     const venvPath = `${odooHome}/venv`;
 
     await createVirtualEnv(venvPath, odooUser)
 
     // Install packages from of the odoo
     await runCommand({
-        command: `cd ${odooHome}/odoo-server && ${odooHome}/venv/bin/pip install .`,
+        command: `cd ${odooHome}/odoo-server && ${venvPath}/bin/pip install .`,
         message: "Installing Python packages for Odoo.",
         successMessage: "Successfully installed python packages for Odoo.",
     });
@@ -78,4 +79,14 @@ export const installPipPackages = async (odooHome: string, odooUser: string) => 
         command: `${venvPath}/bin/pip install psycopg2-binary pdfminer.six ebaysdk lxml_html_clean`,
         mute: true
     });
+
+    // installing additional python dependancy for odoo enterprise
+    if (isEnterprise) {
+        await runCommand({
+            command: `${venvPath}/bin/pip install dbfread google_auth xmlsec pyjwt phonenumbers`,
+            message: "Installing python dependancy for Odoo enterprise.",
+            successMessage: "Python dependancy for Odoo enterprise installed.",
+        });
+    }
+
 };

@@ -198,12 +198,6 @@ export const cloneOdooEnterprise = async (version: string, odooHome: string, odo
         mute: true
     })
 
-    // installing additional python dependancy for odoo enterprise
-    await runCommand({
-        command: `${venvPath}/bin/pip install dbfread google_auth xmlsec pyjwt phonenumbers`,
-        message: "Installing python dependancy for Odoo enterprise.",
-        successMessage: "Python dependancy for Odoo enterprise installed.",
-    });
 };
 
 

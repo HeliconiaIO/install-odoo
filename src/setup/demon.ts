@@ -107,7 +107,7 @@ exit 0
     await runCommand({
       command: `sudo update-rc.d ${odooUser}-server defaults`,
       message: `Creating Odoo demon file.`,
-      successMessage: `Odoo Odoo demon created successfully at: ${daemonPath}`
+      successMessage: `Odoo demon created successfully at: ${daemonPath}`
     })
 
   } catch (error) {

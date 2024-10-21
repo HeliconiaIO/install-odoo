@@ -29,8 +29,6 @@ program
       process.exit(0);
     };
 
-    const isPgInstalled = await isPostgreSQLInstalled()
-
     const response = await prompts([
       {
         type: "select",
@@ -111,13 +109,13 @@ program
         initial: "odoo",
       },
       {
-        type: (prev, values) => (isPgInstalled ? "text" : null), // If `installPG` is `true`, ask to for PG User
+        type: "text",
         name: "pgUser",
         message: "Enter the Name of the PostgreSQL user for Odoo:",
         initial: (prev, values) => values.odooUser || "", // Set initial value to odooUser if it's provided
       },
       {
-        type: (prev, values) => (isPgInstalled ? "password" : null), // If `installPG` is `true`, ask to for PG User
+        type: "password",
         name: "pgPassword",
         message: `Enter the Password for PostgreSQL user for Odoo:`,
         validate: (value) =>
@@ -214,7 +212,7 @@ program
         }
 
         // Setup Python packages
-        await installPipPackages(odooHome, odooUser);
+        await installPipPackages(odooHome, odooUser, isEnterprise);
 
         // Setup Odoo configuration
         await setupOdooConfig(OdooConfig);
