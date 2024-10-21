@@ -62,14 +62,15 @@ export const createVirtualEnv = async (venvPath: string, odooUser: string) => {
  * 
  * @throws Will throw an error if the installation process fails.
  */
-export const installPipPackages = async (odooHome: string, odooUser: string, isEnterprise: boolean) => {
+export const installPipPackages = async (version: string, odooHome: string, odooUser: string, isEnterprise: boolean) => {
+    const requirementsUrl = `https://github.com/odoo/odoo/raw/${version}/requirements.txt`;
     const venvPath = `${odooHome}/venv`;
 
     await createVirtualEnv(venvPath, odooUser)
 
     // Install packages from of the odoo
     await runCommand({
-        command: `cd ${odooHome}/odoo-server && ${venvPath}/bin/pip install .`,
+        command: `${venvPath}/bin/pip install -r ${requirementsUrl}`,
         message: "Installing Python packages for Odoo.",
         successMessage: "Successfully installed python packages for Odoo.",
     });
