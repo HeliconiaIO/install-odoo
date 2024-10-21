@@ -226,7 +226,7 @@ program
         }
 
         // Setup Python packages
-        await installPipPackages(odooHome, odooUser, isEnterprise);
+        await installPipPackages(version, odooHome, odooUser, isEnterprise);
 
         // Setup Odoo configuration
         await setupOdooConfig(OdooConfig);
