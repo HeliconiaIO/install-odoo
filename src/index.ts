@@ -1,4 +1,4 @@
-#!/usr/bin/env -S pnpm tsx
+#!/usr/bin/env node
 import { ScriptName, validateGitHubToken } from "@helpers/misc";
 import { setupOdooConfig } from "@setup/config";
 import { setupDaemon } from "@setup/demon";
