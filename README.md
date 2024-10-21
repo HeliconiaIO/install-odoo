@@ -1,5 +1,11 @@
 ![install-odoo-cli](https://www.heliconia.io/images/extra/install-odoo-cli.png)
 
+![NPM Version](https://img.shields.io/npm/v/install-odoo)
+![NPM Downloads](https://img.shields.io/npm/dy/install-odoo)
+![Node Current](https://img.shields.io/node/v/install-odoo)
+![NPM Type Definitions](https://img.shields.io/npm/types/install-odoo)
+![NPM License](https://img.shields.io/npm/l/install-odoo)
+
 # Install Odoo
 
 A command-line tool to install Odoo with various configuration options.

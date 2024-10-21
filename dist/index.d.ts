@@ -1,1 +1,1 @@
-#!/usr/bin/env -S pnpm tsx
+#!/usr/bin/env node
