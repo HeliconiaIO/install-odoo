@@ -1,5 +1,6 @@
 import { cloneRepo } from "@helpers/clone-repo";
 import { runCommand } from "@helpers/run-command";
+import { execSync } from "child_process"; // todo: replace with runCommand
 import fs from 'fs';
 import ora from "ora";
 import path from "path";
@@ -121,6 +122,41 @@ const createOdooDirs = async (odooHome: string, odooUser: string) => {
 }
 
 /**
+ * Checks if the specified Odoo user exists and has the required configuration.
+ * If the user does not exist, it creates the user with the necessary configuration.
+ *
+ * @param {string} odooUser - The user under which the Odoo server will run.
+ * @param {string} odooHome - The directory to be used as the user's home directory.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the user check or creation is complete.
+ *
+ * @throws {Error} - Throws an error if user creation or configuration update fails.
+ */
+const createSystemUSer = async (odooUser: string, odooHome: string): Promise<void> => {
+    try {
+        // Check if the user exists
+        execSync(`id -u ${odooUser}`, { stdio: "pipe" }).toString().trim();
+        console.log(`User ${odooUser} already exists. Verifying configuration...`);
+
+        // Update user settings if necessary
+        await runCommand({
+            command: `sudo usermod --system --shell=/bin/bash --home=${odooHome} --gecos 'ODOO' --groups ${odooUser}`,
+            message: `Updating ${odooUser} user configuration.`,
+            successMessage: `${odooUser} user configuration updated.`
+        });
+    } catch (error) {
+        console.log(`User ${odooUser} does not exist. Creating user...`);
+
+        // Create the user with the required configuration
+        await runCommand({
+            command: `sudo adduser --system --quiet --shell=/bin/bash --home=${odooHome} --gecos 'ODOO' --group ${odooUser}`,
+            message: `Creating ${odooUser} system user.`,
+            successMessage: `${odooUser} system user created.`
+        });
+    }
+};
+
+/**
  * Sets up the Odoo installation environment.
  *
  * This function handles the complete setup process for Odoo, including
@@ -138,11 +174,8 @@ const createOdooDirs = async (odooHome: string, odooUser: string) => {
  */
 export const setupOdoo = async (version: string, odooHome: string, odooUser: string) => {
 
-    await runCommand({
-        command: `sudo adduser --system --quiet --shell=/bin/bash --home=${odooHome} --gecos 'ODOO' --group ${odooUser}`,
-        message: `Createing ${odooUser} system user.`,
-        successMessage: `${odooUser} system user created.`
-    })
+    // Check or create Odoo user with necessary configuration
+    await createSystemUSer(odooUser, odooHome);
 
     await runCommand({
         command: `sudo adduser ${odooUser} sudo`,
