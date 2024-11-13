@@ -122,7 +122,7 @@ const createOdooDirs = async (odooHome: string, odooUser: string) => {
 }
 
 /**
- * Checks if the specified Odoo user exists and has the required configuration.
+ * Checks if the specified Odoo user exists.
  * If the user does not exist, it creates the user with the necessary configuration.
  *
  * @param {string} odooUser - The user under which the Odoo server will run.
@@ -130,24 +130,14 @@ const createOdooDirs = async (odooHome: string, odooUser: string) => {
  *
  * @returns {Promise<void>} - A promise that resolves when the user check or creation is complete.
  *
- * @throws {Error} - Throws an error if user creation or configuration update fails.
+ * @throws {Error} - Throws an error if user creation fails.
  */
-const createSystemUSer = async (odooUser: string, odooHome: string): Promise<void> => {
+const createSystemUser = async (odooUser: string, odooHome: string): Promise<void> => {
     try {
         // Check if the user exists
         execSync(`id -u ${odooUser}`, { stdio: "pipe" }).toString().trim();
-        console.log(`User ${odooUser} already exists. Verifying configuration...`);
-
-        // Update user settings if necessary
-        await runCommand({
-            command: `sudo usermod --system --shell=/bin/bash --home=${odooHome} --gecos 'ODOO' --groups ${odooUser}`,
-            message: `Updating ${odooUser} user configuration.`,
-            successMessage: `${odooUser} user configuration updated.`
-        });
     } catch (error) {
-        console.log(`User ${odooUser} does not exist. Creating user...`);
-
-        // Create the user with the required configuration
+        // User does not exist, create the user with the required configuration
         await runCommand({
             command: `sudo adduser --system --quiet --shell=/bin/bash --home=${odooHome} --gecos 'ODOO' --group ${odooUser}`,
             message: `Creating ${odooUser} system user.`,
@@ -175,7 +165,7 @@ const createSystemUSer = async (odooUser: string, odooHome: string): Promise<voi
 export const setupOdoo = async (version: string, odooHome: string, odooUser: string) => {
 
     // Check or create Odoo user with necessary configuration
-    await createSystemUSer(odooUser, odooHome);
+    await createSystemUser(odooUser, odooHome);
 
     await runCommand({
         command: `sudo adduser ${odooUser} sudo`,
@@ -191,7 +181,7 @@ export const setupOdoo = async (version: string, odooHome: string, odooUser: str
     });
 
     await runCommand({
-        command: `sudo chown -R ${odooUser}:${odooUser} ${odooHome}/*`,
+        command: `sudo chown -R ${odooUser}:${odooUser} ${odooHome}/`,
         mute: true
     })
 
@@ -227,7 +217,7 @@ export const cloneOdooEnterprise = async (version: string, odooHome: string, odo
     });
 
     await runCommand({
-        command: `sudo chown -R ${odooUser}:${odooUser} ${odooHome}/*`,
+        command: `sudo chown -R ${odooUser}:${odooUser} ${odooHome}/`,
         mute: true
     })
 
