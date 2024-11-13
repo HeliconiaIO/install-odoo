@@ -69,7 +69,7 @@ program
       {
         type: "text",
         name: "odooUser",
-        message: "Enter the Name of the system user for Odoo:",
+        message: "Enter the Name of Odoo system user:",
         initial: "odoo",
       },
       {
@@ -94,7 +94,7 @@ program
       {
         type: "number",
         name: "geventPort",
-        message: "Set the default Odoo port for websocket:",
+        message: "Set the default Odoo websocket port:",
         initial: 8072,
       },
       {
@@ -106,27 +106,31 @@ program
       {
         type: "text",
         name: "pgHost",
-        message: "Enter the hostname of the PostgreSQL:",
+        message: "Enter the PostgreSQL hostname:",
         initial: "localhost",
       },
       {
         type: "number",
         name: "pgPort",
-        message: "Enter the port of the PostgreSQL:",
+        message: "Enter the PostgreSQL port:",
         initial: 5432,
       },
       {
         type: "text",
         name: "pgUser",
-        message: "Enter the name of the PostgreSQL user:",
+        message: "Enter the PostgreSQL user:",
         initial: (prev, values) => values.installPG && values.odooUser || "", // Set initial value to odooUser if it's provided
       },
       {
         type: "password",
         name: "pgPassword",
-        message: `Enter the password for PostgreSQL user:`,
-        validate: (value) =>
-          value.length < 8 ? `Password must be at least 8 characters.` : true,
+        message: `Enter the PostgreSQL password`,
+        // validate: (values) => {
+        //   if (values.length < 8) {
+        //     return `Password must be at least 8 characters. ${values}`;
+        //   }
+        //   return true;
+        // },
       },
       {
         type: "confirm",
