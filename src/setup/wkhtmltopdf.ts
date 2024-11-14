@@ -60,7 +60,7 @@ export const installWkhtmltopdf = async () => {
     }
 
     // Construct the download URL dynamically
-    const downloadUrl = `https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_${architecture}.deb`;
+    const downloadUrl = `https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_${architecture === 'x64' ? 'amd64' : architecture}.deb`;
 
     // Extract the file name from the URL
     const fileName = path.basename(downloadUrl);
