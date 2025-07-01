@@ -5,6 +5,13 @@ import path from "path";
 import pc from "picocolors";
 
 
+const archMap: Record<string, string> = {
+    x64: "amd64",
+    ia32: "i386",
+    arm64: "arm64",
+    ppc64: "ppc64el",
+};
+
 /**
  * Checks if wkhtmltopdf is installed on the system.
  *
@@ -50,17 +57,18 @@ export const installWkhtmltopdf = async () => {
     }
 
     // Determine the architecture
-    const architecture = os.arch();
-    const validArchitectures = ['x64', 'arm64', 'ppc64le'];
+    const arch = os.arch();
+    const normalizedArch = archMap[arch] || arch;
 
     // Check if the architecture is supported
-    if (!validArchitectures.includes(architecture)) {
-        console.error(`Unsupported architecture: ${architecture}`);
+    if (!normalizedArch) {
+        console.error(`Unsupported architecture: ${arch}`);
         process.exit(1);
     }
 
     // Construct the download URL dynamically
-    const downloadUrl = `https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_${architecture === 'x64' ? 'amd64' : architecture}.deb`;
+
+    const downloadUrl = `https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_${normalizedArch}.deb`;
 
     // Extract the file name from the URL
     const fileName = path.basename(downloadUrl);
