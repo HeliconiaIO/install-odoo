@@ -1,6 +1,6 @@
 {
   "name": "install-odoo",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "keywords": [
     "odoo",
     "install-odoo",
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/HeliconiaIO/install-odoo#readme",
   "author": "Heliconia Team <hello@heliconia.io>",
   "license": "MIT",
-  "description": "A node cli to install odoo",
+  "description": "A simple and powerful CLI tool to automate the installation of Odoo. Supports multiple Odoo versions, and customizable configurations. Designed for developers, testers, and system integrators to get Odoo up and running in minutes.",
   "main": "dist/index.js",
   "bin": {
     "install-odoo": "./dist/index.js"
