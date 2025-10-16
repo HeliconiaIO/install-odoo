@@ -29,17 +29,34 @@ export const runCommand = async (options: RunCommandType) => {
   if (!mute) {
     spinner = ora({ text: spinnerMessage, color: 'magenta', spinner: 'circleHalves' }).start();
   }
+  // Respect dry-run mode set via environment variable
+  if (process.env.DRY_RUN === '1') {
+    if (!mute) {
+      spinner?.succeed(pc.yellow(`[DRY RUN] ${spinnerMessage}`));
+    }
+    if (!mute) {
+      console.log(pc.yellow(`[DRY RUN] ${command}`));
+    }
+    return;
+  }
 
   try {
-    execSync(command, { stdio: "pipe" });
+    const stdout = execSync(command, { stdio: "pipe" });
     if (!mute) {
       spinner?.succeed(spinnerSuccessMessage);
     }
-  } catch (error) {
-    console.error(`Failed to execute ${command}`, error, '\n');
+    return stdout?.toString?.() || '';
+  } catch (error: any) {
+    // Capture stderr/stdout if available to aid debugging
+    const stdout = error?.stdout ? error.stdout.toString() : '';
+    const stderr = error?.stderr ? error.stderr.toString() : '';
+    console.error(pc.red(`Failed to execute: ${command}`));
+    if (stdout) console.error(pc.red(`stdout: ${stdout}`));
+    if (stderr) console.error(pc.red(`stderr: ${stderr}`));
     if (!mute) {
       spinner?.fail(pc.red(`Failed to execute: ${command}`));
     }
-    return;
+    // Re-throw so callers can decide how to handle failures
+    throw new Error(`Command failed: ${command} - ${error?.message || String(error)}`);
   }
 };

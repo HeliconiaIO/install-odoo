@@ -13,16 +13,21 @@ import fs from 'fs';
 import pc from "picocolors";
 import prompts from "prompts";
 import { OdooConfigType } from "types";
+import { DEFAULT_ODOO_VERSION, SUPPORTED_ODOO_VERSIONS } from './constants';
 
 console.log(pc.magenta("Welcome to"));
 console.log(pc.magenta(ScriptName))
+console.log(pc.cyan("Press Ctrl+C to exit at any time.\n"));
 
 const program = new Command();
 
 program
   .version("1.0.0")
   .description("Odoo Installer CLI")
-  .action(async () => {
+  .option('--dry-run', 'Show actions that would be performed without executing them')
+  .action(async (cmd) => {
+    // Set dry-run in environment so helpers respect it
+    if (cmd.dryRun) process.env.DRY_RUN = '1';
 
     const onCancel = () => {
       console.log(pc.red('Odoo Installation Cancelled. Goodbye! 👋'));
@@ -34,10 +39,8 @@ program
         type: "select",
         name: "version",
         message: "Select Odoo version to install:",
-        choices: [
-          { title: "Odoo 18.0", value: "18.0" },
-          { title: "Odoo 17.0", value: "17.0" },
-        ],
+        choices: SUPPORTED_ODOO_VERSIONS.map((v) => ({ title: `Odoo ${v}`, value: v })),
+        initial: SUPPORTED_ODOO_VERSIONS.indexOf(DEFAULT_ODOO_VERSION),
       },
       {
         type: "confirm",
@@ -170,6 +173,35 @@ program
     ], { onCancel });
 
     const { version, isEnterprise, accessToken, odooHome, odooUser, installPG, pgHost, pgPort, pgUser, pgPassword, strongPassword, adminPassword, httpPort, geventPort, nginx, websiteName, ssl, sslEmail, wkhtmltopdf } = response;
+
+    // Input validation (post-prompt) for critical fields
+    const pathIsAbsolute = (p?: string) => typeof p === 'string' && p.startsWith('/');
+    if (!pathIsAbsolute(odooHome)) {
+      console.error(pc.red(`Odoo home path must be an absolute path (start with '/'): ${odooHome}`));
+      process.exit(1);
+    }
+
+    const portInRange = (p?: number) => typeof p === 'number' && Number.isInteger(p) && p > 0 && p < 65536;
+    if (!portInRange(httpPort)) {
+      console.error(pc.red(`HTTP port must be an integer between 1 and 65535. Provided: ${httpPort}`));
+      process.exit(1);
+    }
+    if (!portInRange(geventPort)) {
+      console.error(pc.red(`Gevent port must be an integer between 1 and 65535. Provided: ${geventPort}`));
+      process.exit(1);
+    }
+    if (!portInRange(pgPort)) {
+      console.error(pc.red(`Postgres port must be an integer between 1 and 65535. Provided: ${pgPort}`));
+      process.exit(1);
+    }
+
+    if (ssl && sslEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(sslEmail)) {
+        console.error(pc.red(`Provided SSL admin email is invalid: ${sslEmail}`));
+        process.exit(1);
+      }
+    }
 
     const OdooConfig: OdooConfigType = {
       version: version,

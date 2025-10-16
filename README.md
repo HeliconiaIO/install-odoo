@@ -6,7 +6,7 @@
 ![NPM Type Definitions](https://img.shields.io/npm/types/install-odoo)
 ![NPM License](https://img.shields.io/npm/l/install-odoo)
 
-# Install Odoo
+# Install Odoo CLI
 
 A command-line tool to install Odoo with various configuration options.
 
@@ -39,6 +39,7 @@ When you run `npx install-odoo`, you will be prompted to provide various configu
 
 1.  **Select Odoo Version**  
     Choose the version of Odoo you wish to install. Options include:    
+    -   Odoo 19.0
     -   Odoo 18.0
     -   Odoo 17.0
 
