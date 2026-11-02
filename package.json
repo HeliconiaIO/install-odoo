@@ -1,6 +1,6 @@
 {
   "name": "install-odoo",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "keywords": [
     "odoo",
     "install-odoo",
@@ -19,7 +19,7 @@
   "description": "A simple and powerful CLI tool to automate the installation of Odoo. Supports multiple Odoo versions, and customizable configurations. Designed for developers, testers, and system integrators to get Odoo up and running in minutes.",
   "main": "dist/index.js",
   "bin": {
-    "install-odoo": "./dist/index.js"
+    "install-odoo": "dist/index.js"
   },
   "files": [
     "dist"

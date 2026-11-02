@@ -175,7 +175,7 @@ The package is published from GitHub Actions with [npm Trusted Publishing](https
 (no npm token is stored). Bump `version` in `package.json`, commit, then push a matching tag:
 
 ```bash
-git tag v1.2.1 && git push origin v1.2.1
+git tag v1.2.2 && git push origin v1.2.2
 ```
 
 ## License

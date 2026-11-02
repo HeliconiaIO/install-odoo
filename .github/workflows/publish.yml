@@ -54,5 +54,15 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Check the package is publish-clean
+        # npm silently drops package.json fields it "auto-corrects" (e.g. a bin path) when publishing
+        run: |
+          OUT=$(npm publish --dry-run --ignore-scripts 2>&1) || { echo "$OUT"; exit 1; }
+          echo "$OUT"
+          if echo "$OUT" | grep -q "auto-corrected"; then
+            echo "npm would modify package.json when publishing: run 'npm pkg fix'" >&2
+            exit 1
+          fi
+
       - name: Publish
         run: npm publish --provenance --access public
