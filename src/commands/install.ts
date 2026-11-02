@@ -1,5 +1,5 @@
 import { ScriptName, validateGitHubToken } from "@helpers/misc";
-import { assertRoot, assertSupportedOs, isLocalHost, isSafeAbsolutePath, isValidIdentifier, isValidPgIdentifier } from "@helpers/system";
+import { assertRoot, assertSupportedOs, isDryRun, isLocalHost, isSafeAbsolutePath, isValidIdentifier, isValidPgIdentifier, odooVersionOsError, readOsRelease } from "@helpers/system";
 import { EMAIL_REGEX, validateConfig } from "@helpers/validate";
 import { setupOdooConfig } from "@setup/config";
 import { enableSSL, setupNginx } from "@setup/nginx";
@@ -13,7 +13,7 @@ import fs from "fs";
 import pc from "picocolors";
 import prompts from "prompts";
 import { OdooConfigType } from "types";
-import { DEFAULT_ODOO_VERSION, SUPPORTED_ODOO_VERSIONS } from "../constants";
+import { DEFAULT_ODOO_VERSION, ODOO_VERSION_REQUIREMENTS, SUPPORTED_ODOO_VERSIONS, SupportedOdooVersion } from "../constants";
 
 export interface InstallOptions {
   dryRun?: boolean;
@@ -67,7 +67,11 @@ const promptConfig = async (): Promise<OdooConfigType> => {
       type: "select",
       name: "version",
       message: "Select Odoo version to install:",
-      choices: SUPPORTED_ODOO_VERSIONS.map((v) => ({ title: `Odoo ${v}`, value: v })),
+      choices: SUPPORTED_ODOO_VERSIONS.map((v) => ({
+        title: `Odoo ${v}`,
+        value: v,
+        description: ODOO_VERSION_REQUIREMENTS[v] ? `Needs Ubuntu ${ODOO_VERSION_REQUIREMENTS[v]!.minUbuntu} or newer` : undefined,
+      })),
       initial: SUPPORTED_ODOO_VERSIONS.indexOf(DEFAULT_ODOO_VERSION),
     },
     {
@@ -274,6 +278,10 @@ export const installCommand = async (options: InstallOptions) => {
   const OdooConfig = options.config ? loadConfigFile(options.config) : await promptConfig();
 
   const errors = validateConfig(OdooConfig);
+  if (!errors.length && !isDryRun()) {
+    const osError = odooVersionOsError(OdooConfig.version, readOsRelease().VERSION_ID);
+    if (osError) errors.push(osError);
+  }
   if (!errors.length && fs.existsSync(OdooConfig.odooHome) && !options.dryRun) {
     errors.push(`The path ${OdooConfig.odooHome} already exists. Please choose a different path.`);
   }
@@ -283,6 +291,11 @@ export const installCommand = async (options: InstallOptions) => {
   if (errors.length) {
     errors.forEach((error) => console.error(pc.red(`✘ ${error}`)));
     process.exit(1);
+  }
+
+  const minPostgres = ODOO_VERSION_REQUIREMENTS[OdooConfig.version as SupportedOdooVersion]?.minPostgres;
+  if (minPostgres && !OdooConfig.installPG) {
+    console.log(pc.yellow(`! Odoo ${OdooConfig.version} needs PostgreSQL ${minPostgres} or newer: make sure ${OdooConfig.pgHost} runs it.`));
   }
 
   console.log(pc.magentaBright(await odooInstallSummary(OdooConfig)));

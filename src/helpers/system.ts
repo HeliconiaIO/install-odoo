@@ -2,6 +2,7 @@ import { execSync } from "child_process";
 import fs from "fs";
 import os from "os";
 import pc from "picocolors";
+import { ODOO_VERSION_REQUIREMENTS, SupportedOdooVersion } from "../constants";
 
 /** Single-quotes a value so it can be embedded safely in a shell command. */
 export const shellQuote = (value: string): string => `'${value.replace(/'/g, `'\\''`)}'`;
@@ -65,6 +66,17 @@ export const assertSupportedOs = () => {
     );
     process.exit(1);
   }
+};
+
+/**
+ * Returns why `version` cannot be installed on Ubuntu `ubuntuVersion`, or `null` when it can.
+ * Pure so it can be tested; the caller decides whether to enforce it (not in dry-run mode).
+ */
+export const odooVersionOsError = (version: string | undefined, ubuntuVersion: string | undefined): string | null => {
+  const minUbuntu = ODOO_VERSION_REQUIREMENTS[version as SupportedOdooVersion]?.minUbuntu;
+  if (!minUbuntu || !ubuntuVersion) return null;
+  if (parseFloat(ubuntuVersion) >= parseFloat(minUbuntu)) return null;
+  return `Odoo ${version} requires Python 3.12 or newer, which needs Ubuntu ${minUbuntu} or newer (this server runs Ubuntu ${ubuntuVersion}).`;
 };
 
 export interface OdooTuning {

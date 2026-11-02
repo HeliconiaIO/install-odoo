@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { computeOdooTuning, isSafeAbsolutePath, isValidIdentifier, shellQuote } from '@helpers/system';
+import { computeOdooTuning, isSafeAbsolutePath, isValidIdentifier, odooVersionOsError, shellQuote } from '@helpers/system';
 import { validateConfig } from '@helpers/validate';
 import { renderOdooConfig } from '@setup/config';
 import { fixNginxConfigText, parseOdooConf, upsertOdooConf } from '@setup/doctor';
@@ -132,6 +132,12 @@ describe('validation', () => {
   it('rejects equal ports and bad versions', () => {
     assert.ok(validateConfig({ ...valid, geventPort: 8069 }).length > 0);
     assert.ok(validateConfig({ ...valid, version: '12.0' }).length > 0);
+  });
+  it('accepts Odoo 20.0', () => assert.deepEqual(validateConfig({ ...valid, version: '20.0' }), []));
+  it('needs Ubuntu 24.04 for Odoo 20.0 (Python 3.12)', () => {
+    assert.match(odooVersionOsError('20.0', '22.04') ?? '', /Ubuntu 24.04/);
+    assert.equal(odooVersionOsError('20.0', '24.04'), null);
+    assert.equal(odooVersionOsError('19.0', '22.04'), null);
   });
   it('requires a real domain and email for SSL', () => {
     assert.ok(validateConfig({ ...valid, nginx: true, websiteName: '_', ssl: true, sslEmail: 'a@b.co' }).length > 0);

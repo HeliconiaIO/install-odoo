@@ -12,7 +12,7 @@
 
 # Install Odoo CLI
 
-Install and configure a production-ready **Odoo 17, 18 or 19** on an Ubuntu server with a single command.
+Install and configure a production-ready **Odoo 17, 18, 19 or 20** on an Ubuntu server with a single command.
 
 ```bash
 sudo npx install-odoo
@@ -30,6 +30,7 @@ sudo npx install-odoo
 ## Requirements
 
 - Ubuntu **22.04** or **24.04** (amd64 or arm64), and root access: run the CLI with `sudo`.
+  Odoo **20.0** requires Python 3.12, so it can only be installed on Ubuntu **24.04**; the CLI stops before changing anything on 22.04.
 - Node.js **18.18** or newer with npm. If they are missing:
 
   ```bash
@@ -49,7 +50,7 @@ Add `--dry-run` to see every command without running it.
 
 | Prompt | Default | Notes |
 | --- | --- | --- |
-| Odoo version | `19.0` | `19.0`, `18.0` or `17.0`. |
+| Odoo version | `19.0` | `20.0`, `19.0`, `18.0` or `17.0`. Odoo 20.0 needs Ubuntu 24.04 or newer (it requires Python 3.12) and PostgreSQL 16 or newer. |
 | Odoo Enterprise | No | Asks for a GitHub access token with access to `odoo/enterprise`. |
 | Odoo home directory | `/odoo` | Absolute path, must not exist yet. |
 | System user | `odoo` | Created if missing. The service is named `<user>-server`. |
@@ -174,7 +175,7 @@ The package is published from GitHub Actions with [npm Trusted Publishing](https
 (no npm token is stored). Bump `version` in `package.json`, commit, then push a matching tag:
 
 ```bash
-git tag v1.1.0 && git push origin v1.1.0
+git tag v1.2.0 && git push origin v1.2.0
 ```
 
 ## License
