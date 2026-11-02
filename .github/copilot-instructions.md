@@ -104,7 +104,7 @@ Always use TypeScript path mappings:
 ## Project-Specific Quirks
 
 ### Ubuntu Version Constraints
-- Supports only Ubuntu 22.04 and 24.04
+- Supports Ubuntu 22.04 and newer
 - Architecture detection for `wkhtmltopdf` downloads (`archMap` in `wkhtmltopdf.ts`)
 - Uses `lsb_release` for version detection
 

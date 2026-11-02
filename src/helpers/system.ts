@@ -53,16 +53,25 @@ export const readOsRelease = (): Record<string, string> => {
   }
 };
 
-export const SUPPORTED_UBUNTU = ['22.04', '24.04'];
+export const MIN_UBUNTU = '22.04';
+
+/** True when Ubuntu release `version` (e.g. "24.04", "25.10") is `min` or newer. Compares year, then month. */
+export const isUbuntuAtLeast = (version: string | undefined, min: string): boolean => {
+  const parse = (v: string) => v.split('.').map(Number);
+  const [year, month = 0] = parse(version ?? '');
+  const [minYear, minMonth = 0] = parse(min);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) return false;
+  return year > minYear || (year === minYear && month >= minMonth);
+};
 
 /** Exits unless running on a supported Ubuntu release. Skipped in dry-run mode. */
 export const assertSupportedOs = () => {
   if (isDryRun()) return;
   const { ID, VERSION_ID } = readOsRelease();
-  if (ID !== 'ubuntu' || !SUPPORTED_UBUNTU.includes(VERSION_ID)) {
+  if (ID !== 'ubuntu' || !isUbuntuAtLeast(VERSION_ID, MIN_UBUNTU)) {
     console.error(
       pc.red('✘ ') +
-        `Unsupported OS (${ID ?? 'unknown'} ${VERSION_ID ?? ''}). Supported: Ubuntu ${SUPPORTED_UBUNTU.join(' or ')}.`,
+        `Unsupported OS (${ID ?? 'unknown'} ${VERSION_ID ?? ''}). Supported: Ubuntu ${MIN_UBUNTU} or newer.`,
     );
     process.exit(1);
   }
@@ -75,7 +84,7 @@ export const assertSupportedOs = () => {
 export const odooVersionOsError = (version: string | undefined, ubuntuVersion: string | undefined): string | null => {
   const minUbuntu = ODOO_VERSION_REQUIREMENTS[version as SupportedOdooVersion]?.minUbuntu;
   if (!minUbuntu || !ubuntuVersion) return null;
-  if (parseFloat(ubuntuVersion) >= parseFloat(minUbuntu)) return null;
+  if (isUbuntuAtLeast(ubuntuVersion, minUbuntu)) return null;
   return `Odoo ${version} requires Python 3.12 or newer, which needs Ubuntu ${minUbuntu} or newer (this server runs Ubuntu ${ubuntuVersion}).`;
 };
 

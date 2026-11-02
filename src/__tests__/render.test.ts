@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { computeOdooTuning, isSafeAbsolutePath, isValidIdentifier, odooVersionOsError, shellQuote } from '@helpers/system';
+import { computeOdooTuning, isSafeAbsolutePath, isUbuntuAtLeast, isValidIdentifier, odooVersionOsError, shellQuote } from '@helpers/system';
 import { validateConfig } from '@helpers/validate';
 import { renderOdooConfig } from '@setup/config';
 import { fixNginxConfigText, parseOdooConf, upsertOdooConf } from '@setup/doctor';
@@ -116,6 +116,16 @@ describe('doctor config helpers', () => {
     const updated = upsertOdooConf(upsertOdooConf(text, 'workers', 4), 'limit_time_real', 1200);
     assert.deepEqual(parseOdooConf(updated), { admin_passwd: 'x', workers: '4', limit_time_real: '1200' });
   });
+});
+
+describe('ubuntu support', () => {
+  it('accepts 22.04 and every newer release', () => {
+    for (const v of ['22.04', '24.04', '24.10', '25.04', '25.10', '26.04', '28.04']) assert.ok(isUbuntuAtLeast(v, '22.04'), v);
+  });
+  it('rejects older or unreadable releases', () => {
+    for (const v of ['20.04', '21.10', '18.04', '', undefined, 'rolling']) assert.ok(!isUbuntuAtLeast(v, '22.04'), String(v));
+  });
+  it('compares month after year', () => assert.ok(!isUbuntuAtLeast('24.04', '24.10')));
 });
 
 describe('validation', () => {

@@ -29,8 +29,8 @@ sudo npx install-odoo
 
 ## Requirements
 
-- Ubuntu **22.04** or **24.04** (amd64 or arm64), and root access: run the CLI with `sudo`.
-  Odoo **20.0** requires Python 3.12, so it can only be installed on Ubuntu **24.04**; the CLI stops before changing anything on 22.04.
+- Ubuntu **22.04 or newer** (amd64 or arm64), and root access: run the CLI with `sudo`.
+  Odoo **20.0** requires Python 3.12, so it needs Ubuntu **24.04 or newer**; the CLI stops before changing anything on 22.04.
 - Node.js **18.18** or newer with npm. If they are missing:
 
   ```bash
@@ -175,7 +175,7 @@ The package is published from GitHub Actions with [npm Trusted Publishing](https
 (no npm token is stored). Bump `version` in `package.json`, commit, then push a matching tag:
 
 ```bash
-git tag v1.2.0 && git push origin v1.2.0
+git tag v1.2.1 && git push origin v1.2.1
 ```
 
 ## License
