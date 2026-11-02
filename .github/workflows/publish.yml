@@ -1,9 +1,20 @@
-name: Publish Dist
+name: Publish to npm
+
+# Publishes with npm Trusted Publishing (OIDC): no npm token is stored in this repository.
+# One-time setup on npmjs.com -> install-odoo -> Settings -> Trusted Publisher -> GitHub Actions:
+#   organization/user: HeliconiaIO, repository: install-odoo, workflow filename: publish.yml
+#
+# Release: bump "version" in package.json, commit, then
+#   git tag v<version> && git push origin v<version>
 
 on:
   push:
-    branches:
-      - main  # Change this if your default branch is different
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write # required for npm trusted publishing and provenance
 
 jobs:
   publish:
@@ -11,33 +22,37 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '20.12.2'  # Your specified Node.js version
+          node-version: 24 # ships npm >= 11.5.1, which trusted publishing requires
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - name: Check the tag matches package.json
+        run: |
+          PKG_VERSION="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$PKG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION" >&2
+            exit 1
+          fi
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Build dist
-        run: npm run build  # This runs the build command from your package.json
+      - name: Type check
+        run: pnpm run typecheck
 
-      - name: Publish dist to public repo
-        env:
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Automatically provided token for authentication
-        run: |
-          git config --global user.name 'atularvind'
-          git config --global user.email 'atul.surficle@gmail.com'
-          git clone https://github.com/HeliconiaIO/install-odoo.git
-          cd install-odoo
-          rm -rf *  # Clear previous contents
-          mkdir dist  # Create the dist directory
-          cp -R ../dist/* ./dist/  # Copy the dist files into the dist directory
-          cp ../README.md .  # Copy README.md
-          cp ../package.json .  # Copy package.json
-          git add .
-          git commit -m "Updated odoo-install cli"
-          git push https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/HeliconiaIO/install-odoo.git main
+      - name: Test
+        run: pnpm test
 
+      - name: Build
+        run: pnpm run build
+
+      - name: Publish
+        run: npm publish --provenance --access public
