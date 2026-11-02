@@ -1,48 +1,70 @@
-![install-odoo-cli](https://www.heliconia.io/images/extra/install-odoo-cli.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/HeliconiaIO/install-odoo/main/docs/images/install-odoo-cli.png" alt="install-odoo CLI tool: Odoo installation, simplified." width="100%">
+</p>
 
-![NPM Version](https://img.shields.io/npm/v/install-odoo)
-![NPM Downloads](https://img.shields.io/npm/dy/install-odoo)
-![Node Current](https://img.shields.io/node/v/install-odoo)
-![NPM Type Definitions](https://img.shields.io/npm/types/install-odoo)
-![NPM License](https://img.shields.io/npm/l/install-odoo)
+<p align="center">
+  <a href="https://www.npmjs.com/package/install-odoo"><img src="https://img.shields.io/npm/v/install-odoo" alt="NPM Version"></a>
+  <a href="https://www.npmjs.com/package/install-odoo"><img src="https://img.shields.io/npm/dy/install-odoo" alt="NPM Downloads"></a>
+  <img src="https://img.shields.io/node/v/install-odoo" alt="Node Current">
+  <img src="https://img.shields.io/npm/types/install-odoo" alt="NPM Type Definitions">
+  <a href="LICENSE"><img src="https://img.shields.io/npm/l/install-odoo" alt="NPM License"></a>
+</p>
 
 # Install Odoo CLI
 
-A command-line tool to install Odoo with various configuration options.
-
-## Prerequisites
-
-Before you begin, ensure that you have the following:
-
--   An Ubuntu 22.04 or 24.04 server, and root access (run the CLI with `sudo`).
--   Node.js version 18.18.0 or higher, along with npm.
-
-If Node.js and npm are not installed on your server, you can install them using the following command:
-
-```bash
-sudo apt install nodejs npm -y
-```
-
-## Installation
-
-You can easily install Odoo using the following command:
+Install and configure a production-ready **Odoo 17, 18 or 19** on an Ubuntu server with a single command.
 
 ```bash
 sudo npx install-odoo
 ```
 
-Odoo is installed as a native **systemd service** (`<user>-server`, e.g. `odoo-server`) that is enabled at boot and
-restarted automatically if Odoo crashes. After starting it, the installer waits until Odoo answers on its HTTP port.
+## Features
 
-### Options
+- **Guided or unattended.** Answer a few prompts, or pass a JSON file for a non-interactive install.
+- **Community or Enterprise.** Enterprise needs a GitHub token that can read `odoo/enterprise`.
+- **Runs as a native systemd service.** It starts at boot and is restarted automatically if Odoo crashes or gets OOM-killed. The installer waits until Odoo answers on `/web/health` before it reports success.
+- **Sized for your server.** `workers`, `max_cron_threads` and `limit_memory_*` are calculated from the CPU and RAM of the machine.
+- **Everything around Odoo.** PostgreSQL 16, an isolated Python virtualenv, `wkhtmltopdf`, log rotation, and optionally an Nginx reverse proxy with a free Let's Encrypt certificate.
+- **`doctor` command.** Diagnoses an existing installation and repairs the common problems (see [Doctor](#doctor)).
 
-| Option | Description |
-| --- | --- |
-| `--dry-run` | Print the actions without executing them. |
-| `--config <file>` | Read all answers from a JSON file instead of prompting (non-interactive install). |
-| `-y`, `--yes` | Do not ask for confirmation before installing. |
+## Requirements
 
-Example `install.json` (every key is optional and falls back to the prompt defaults, except the passwords):
+- Ubuntu **22.04** or **24.04** (amd64 or arm64), and root access: run the CLI with `sudo`.
+- Node.js **18.18** or newer with npm. If they are missing:
+
+  ```bash
+  sudo apt install nodejs npm -y
+  ```
+
+## Quick start
+
+```bash
+sudo npx install-odoo
+```
+
+You will be asked for the options below, shown a summary, and asked to confirm before anything is changed.
+Add `--dry-run` to see every command without running it.
+
+### Prompts
+
+| Prompt | Default | Notes |
+| --- | --- | --- |
+| Odoo version | `19.0` | `19.0`, `18.0` or `17.0`. |
+| Odoo Enterprise | No | Asks for a GitHub access token with access to `odoo/enterprise`. |
+| Odoo home directory | `/odoo` | Absolute path, must not exist yet. |
+| System user | `odoo` | Created if missing. The service is named `<user>-server`. |
+| Super admin password | generated | A strong random password is written to the config file. Or type your own (8+ characters). |
+| HTTP port / websocket port | `8069` / `8072` | Must be different. |
+| Install PostgreSQL 16 | Yes | Uses the official PostgreSQL apt repository. |
+| PostgreSQL host / port | `localhost` / `5432` | Use another host to connect to an existing database server. |
+| PostgreSQL user / password | Odoo user / required | The role is created with `CREATEDB` when PostgreSQL is local. |
+| Install `wkhtmltopdf` | Yes | Patched Qt build 0.12.6.1-3, required for PDF reports. |
+| Install Nginx | No | Asks for the website name (`_` for any host). |
+| Enable SSL | Yes for a real domain | Let's Encrypt through Certbot. Needs the domain's DNS to point at the server, and an email address. |
+
+### Unattended install
+
+Every key is optional except the passwords and falls back to the prompt defaults:
 
 ```json
 {
@@ -61,123 +83,88 @@ Example `install.json` (every key is optional and falls back to the prompt defau
 sudo npx install-odoo --config install.json --yes
 ```
 
+For Enterprise add `"isEnterprise": true` and `"accessToken": "<token>"`, or export `ODOO_GITHUB_TOKEN`.
+Set `"strongPassword": false` together with `"adminPassword"` to choose the super admin password yourself.
+
+| Option | Description |
+| --- | --- |
+| `--dry-run` | Print the actions without executing them. |
+| `--config <file>` | Read all answers from a JSON file instead of prompting. |
+| `-y`, `--yes` | Do not ask for confirmation before installing. |
+
+## What gets installed
+
+For the defaults (user `odoo`, home `/odoo`):
+
+| What | Where |
+| --- | --- |
+| Odoo source | `/odoo/odoo-server` |
+| Enterprise addons (optional) | `/odoo/enterprise` |
+| Your custom addons | `/odoo/custom/addons` (every other folder in `/odoo/custom` is added to `addons_path` too) |
+| Python virtualenv | `/odoo/venv` |
+| Configuration | `/etc/odoo-server.conf` (readable by the Odoo user only; holds the generated super admin password) |
+| systemd service | `/etc/systemd/system/odoo-server.service` |
+| Odoo log | `/var/log/odoo/odoo-server.log` (rotated daily, 30 days kept) |
+| Nginx site (optional) | `/etc/nginx/sites-available/<website>.conf` |
+| Installation summary | `/tmp/odoo-install-summary.md` |
+
+Show the generated super admin password with `sudo grep admin_passwd /etc/odoo-server.conf`.
+
+## Managing the service
+
+```bash
+sudo systemctl status odoo-server        # state
+sudo systemctl restart odoo-server       # restart after changing the config or custom addons
+sudo journalctl -u odoo-server -f        # systemd journal
+tail -f /var/log/odoo/odoo-server.log    # Odoo log
+```
+
+Replace `odoo` with the system user you chose. `workers` and the memory limits live in `/etc/<user>-server.conf`: adjust
+them there if your workload needs it, then restart the service.
+
 ## Doctor
 
-`doctor` checks an existing installation and can repair the common problems, including servers installed with
-`install-odoo` 1.0.x:
+`doctor` checks an existing installation and can repair the common problems. This includes servers installed with
+`install-odoo` 1.0.x, which used an init.d script that left the service "active" after Odoo had died.
 
 ```bash
 sudo npx install-odoo doctor          # report only
 sudo npx install-odoo doctor --fix    # repair what can be repaired automatically
 ```
 
-It checks that the service is defined natively in systemd and really running (not just "active"), that Odoo answers
-on `/web/health`, that workers and memory limits are set, log rotation, file ownership, the PostgreSQL connection,
-nginx proxy settings, `wkhtmltopdf`, and whether the kernel OOM killer has killed Odoo recently. Options:
-`--user <name>` (pick an installation), `--yes`, `--dry-run`. The exit code is `1` while a check is failing.
+| Check | What it looks for |
+| --- | --- |
+| Service definition | A legacy init.d script, or a unit that does not restart Odoo after a crash. |
+| Service state | A service that is "active (exited)", failed, or restarting repeatedly. |
+| HTTP health | Whether `/web/health` answers on the configured port. |
+| Workers and limits | `workers = 0` (threaded mode) or missing memory and time limits. |
+| Logs | Missing log rotation, a huge log file, a nearly full disk. |
+| Permissions | The Odoo user in the `sudo` group, a venv or log directory with the wrong owner. |
+| PostgreSQL | The service running and the credentials from the config working. |
+| Nginx | Websocket proxy without HTTP/1.1, no upload size limit, `Secure` cookies without SSL. |
+| `wkhtmltopdf` | Installed or not. |
+| Out of memory | Odoo processes killed by the kernel in the last 30 days. |
 
-## Usage
+Fixes back up every file they change and never overwrite values you set yourself. Other options:
+`--user <name>` to pick an installation when there are several, `--yes` to skip the confirmation, `--dry-run`.
+The exit code is `1` while a check is failing, so it can run from a monitoring job.
 
-When you run `npx install-odoo`, you will be prompted to provide various configuration options. Here’s what you can expect:
+## Troubleshooting
 
-### Configuration Options
-
-1.  **Select Odoo Version**  
-    Choose the version of Odoo you wish to install. Options include:    
-    -   Odoo 19.0
-    -   Odoo 18.0
-    -   Odoo 17.0
-
-2.  **Install Odoo Enterprise**  
-    Do you want to install the Odoo Enterprise version?
-    
-    -   **Yes**: You will be prompted to enter your GitHub access token.
-    -   **No**: Proceed to the next option.
-
-3.  **GitHub Access Token**  
-    If you choose to install the Enterprise version, you will need to provide your GitHub access token. This token must have access to the Odoo Enterprise repository.
-
-4.  **Odoo Home Path**  
-    Specify the path where Odoo will be installed (default is `/odoo`). Ensure that this path does not already exist.
-
-5.  **System User for Odoo**
-    Enter the name of the system user that will be used to run Odoo (default is `odoo`).
-
-6.  **Generate Strong Odoo Super Admin Password**  
-    Would you like to generate a random strong password for the Odoo super admin account?
-    
-    -   **Yes**: A strong password will be generated.
-    -   **No**: You can provide a password in the next step.
-
-7.  **Odoo Super Admin Password**  
-    Enter your desired password for the Odoo super admin account if you choose to `No` in `Generate Strong Odoo Super Admin Password`.
-   
-8.  **Odoo HTTP Port**  
-    Set the default HTTP port for Odoo (default is `8069`).
-    
-9.  **Odoo Gevent Port**  
-    Set the default WebSocket port for Odoo (default is `8072`).
-
-10.  **Install PostgreSQL**  
-    Would you like to install PostgreSQL 16?
-    
-     -   **Yes**: You will be prompted for the PostgreSQL user and password.
-     -   **No**: Skip to the next option.
-
-11.  **PostgreSQL Host**  
-    Enter the hostname or IP address of the PostgreSQL server (default is `localhost`).
-    
-12.   **PostgreSQL Port**  
-    Enter the port for the PostgreSQL server (default is `5432`).
-
-13.   **PostgreSQL User**  
-    If PostgreSQL is being installed, enter the name of the PostgreSQL user (default is the same as the Odoo user).
-    
-14.   **PostgreSQL Password**  
-    Enter the password for the PostgreSQL user.
-
-15.  **Install WKHTMLTOPDF**  
-    Would you like to install WKHTMLTOPDF for PDF rendering?
-    
-     -   **Yes**: WKHTMLTOPDF will be installed.
-     -   **No**: Proceed to the end of the installation.
-
-16.  **Install Nginx**  
-    Would you like to install Nginx?
-    
-     -   **Yes**: You will be asked to enter a website name.
-     -   **No**: Proceed to the next option.
-
-17.  **Website Name**  
-    Enter the name of the website to be configured with Nginx.
-    
-18.  **Enable SSL**  
-    Do you want to enable SSL for your website?
-    
-     -   **Yes**: You will be prompted to enter an admin email for SSL certificates.
-     -   **No**: Proceed to the next option.
-
-19.  **Admin Email**  
-    Enter the email address that will be used for SSL certificate registration.
-
-
-## Managing the service
-
-```bash
-sudo systemctl status odoo-server       # state
-sudo systemctl restart odoo-server
-sudo journalctl -u odoo-server -f       # systemd journal
-tail -f /var/log/odoo/odoo-server.log   # Odoo log (rotated daily, 30 days)
-```
-
-Replace `odoo` with the system user you chose. The installer sizes `workers`, `max_cron_threads` and
-`limit_memory_*` in `/etc/<user>-server.conf` to the server's CPU and RAM; adjust them there if needed.
+- **Odoo is not reachable after the install.** Run `sudo npx install-odoo doctor`, then
+  `sudo journalctl -u odoo-server -n 100`.
+- **Odoo stops by itself.** Run `doctor`: it reports kernel OOM kills and fixes missing worker and memory limits.
+  A server with very little RAM may also need swap.
+- **SSL could not be enabled.** The certificate request needs the domain's DNS to point at the server. Fix the DNS,
+  then run `sudo certbot --nginx -d <your-domain>`.
+- **PDF reports have no header or footer.** Install `wkhtmltopdf` from this CLI (Odoo needs the patched Qt build,
+  not the one in the Ubuntu repositories).
 
 ## Development
 
 ```bash
 pnpm install
-pnpm dev -- --dry-run     # run from source without changing the system
+pnpm dev --dry-run               # run from source without changing the system
 pnpm typecheck && pnpm test && pnpm build
 ```
 
@@ -196,10 +183,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-If you encounter any problems or have suggestions for improvements, please submit an [issue](https://github.com/HeliconiaIO/install-odoo/issues) on our GitHub repository. Your feedback is valuable to us!
+If you encounter any problems or have suggestions for improvements, please submit an
+[issue](https://github.com/HeliconiaIO/install-odoo/issues) on our GitHub repository. Your feedback is valuable to us!
 
-## About Author
+## About
 
 **Heliconia Solution Pvt. Ltd.**  
 [Odoo Partner and Implementor](https://www.heliconia.io)
-Specializes in end-to-end Odoo implementation, development, integration, customization, and support. We ensure seamless onboarding, agile development, and reliable post-implementation support, empowering businesses worldwide to optimize operations and drive growth with tailored ERP solutions across industries.
+
+Specializes in end-to-end Odoo implementation, development, integration, customization, and support. We ensure seamless
+onboarding, agile development, and reliable post-implementation support, empowering businesses worldwide to optimize
+operations and drive growth with tailored ERP solutions across industries.
