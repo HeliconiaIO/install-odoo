@@ -6,7 +6,13 @@
     "install-odoo",
     "CLI"
   ],
-  "repository": "github:HeliconiaIO/install-odoo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HeliconiaIO/install-odoo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/HeliconiaIO/install-odoo/issues"
+  },
   "homepage": "https://github.com/HeliconiaIO/install-odoo#readme",
   "author": "Heliconia Team <hello@heliconia.io>",
   "license": "MIT",
@@ -22,8 +28,10 @@
     "dev": "tsx src/index.ts",
     "build": "tsup src/index.ts --format cjs --dts --minify terser",
     "start": "node dist/index.js",
-    "lint": "eslint 'src/**/*.ts'",
-    "format": "prettier --write 'src/**/*.ts'"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "format": "prettier --write 'src/**/*.ts'",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/cli-progress": "^3.11.6",
@@ -45,5 +53,10 @@
   },
   "engines": {
     "node": ">=18.18.0"
-  }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "packageManager": "pnpm@11.15.1"
 }

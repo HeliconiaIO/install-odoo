@@ -174,10 +174,12 @@ The following addons paths have been configured:
 ${addonsList}
 
 ## Service Commands
-- **Start Odoo**: \`sudo service ${odooUser}-server start\`
-- **Stop Odoo**: \`sudo service ${odooUser}-server stop\`
-- **Restart Odoo**: \`sudo service ${odooUser}-server restart\`
-- **Check Status**: \`sudo service ${odooUser}-server status\`
+- **Start Odoo**: \`sudo systemctl start ${odooUser}-server\`
+- **Stop Odoo**: \`sudo systemctl stop ${odooUser}-server\`
+- **Restart Odoo**: \`sudo systemctl restart ${odooUser}-server\`
+- **Check Status**: \`sudo systemctl status ${odooUser}-server\`
+- **Follow Logs**: \`sudo journalctl -u ${odooUser}-server -f\` or \`tail -f /var/log/${odooUser}/${odooUser}-server.log\`
+- **Health Check**: \`sudo npx install-odoo doctor\` (add \`--fix\` to repair problems)
 
 ${nginx ? `
 ## Nginx Configuration
@@ -228,7 +230,7 @@ ${websiteLink}
 ---------------------------------------------------------------------------------------------
 `;
 
-    if (!installPG && await !checkPostgresConnection(pgHost, pgPort, pgUser, pgPassword)) {
+    if (!installPG && !(await checkPostgresConnection(pgHost, pgPort, pgUser, pgPassword))) {
         console.log(pc.red(pgWarning(configPath)));
     }
 

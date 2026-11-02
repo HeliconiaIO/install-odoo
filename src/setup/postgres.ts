@@ -1,5 +1,6 @@
 import { runCommand } from "@helpers/run-command";
-import { execSync } from "child_process"; // todo: replace with runCommand
+import { isDryRun, isValidPgIdentifier, tryExec } from "@helpers/system";
+import { execSync } from "child_process";
 import { Client } from 'pg';
 import pc from "picocolors";
 
@@ -77,30 +78,45 @@ const getPostgreSQLVersion = async (): Promise<string | null> => {
 
 
 /**
+ * Waits until the local PostgreSQL server accepts connections.
+ *
+ * @throws {Error} - Throws an error if PostgreSQL is not ready after `timeoutSec` seconds.
+ */
+const waitForPostgres = async (timeoutSec = 30) => {
+    await runCommand({
+        command: `for i in $(seq 1 ${timeoutSec}); do pg_isready -q && exit 0; sleep 1; done; exit 1`,
+        message: "Waiting for PostgreSQL to accept connections.",
+        successMessage: "PostgreSQL is ready.",
+    });
+};
+
+/**
  * Creates a new PostgreSQL user with the specified username and password.
+ * The SQL is sent over stdin, so neither the role name nor the password ever reaches a shell.
  *
  * @param {string} pgUser - The username for the new PostgreSQL user.
  * @param {string} pgPassword - The password for the new PostgreSQL user.
  *
- * @returns {Promise<void>} - Returns a promise that resolves when the user is successfully created.
- *
- * @throws {Error} - Throws an error if the command execution to create the PostgreSQL user fails.
+ * @throws {Error} - Throws an error if the role name is invalid or the user cannot be created.
  */
 export const createPostgreSQLUser = async (pgUser: string, pgPassword: string) => {
-    try {
-        const result = execSync(`sudo -u postgres psql -t -c "SELECT 1 FROM pg_catalog.pg_user WHERE usename='${pgUser}'"`, { encoding: 'utf-8' });
+    if (!isValidPgIdentifier(pgUser)) {
+        throw new Error(`Invalid PostgreSQL user name: ${pgUser}`);
+    }
 
-        if (result.trim() === '1') {
+    if (!isDryRun()) {
+        const exists = tryExec(`sudo -u postgres psql -tAc "SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='${pgUser}'"`);
+        if (exists === '1') {
             console.log(pc.green(`User "${pc.underline(pgUser)}" already exists in PostgreSQL.`));
             return;
         }
-    } catch (error) {
-        console.error(`Error checking if user "${pgUser}" exists:`);
-        return;
     }
 
+    const quotedPassword = `'${pgPassword.replace(/'/g, "''")}'`;
+
     await runCommand({
-        command: `sudo su - postgres -c "psql -c \\"CREATE USER ${pgUser} WITH PASSWORD '${pgPassword}' CREATEDB;\\"" 2> /dev/null || true`,
+        command: `sudo -u postgres psql -v ON_ERROR_STOP=1 -q`,
+        input: `CREATE USER "${pgUser}" WITH PASSWORD ${quotedPassword} CREATEDB;\n`,
         message: "Creating Postgres user for Odoo.",
         successMessage: `Postgres user ${pgUser} created.`,
     })
@@ -109,8 +125,6 @@ export const createPostgreSQLUser = async (pgUser: string, pgPassword: string) =
 
 /**
  * Installs PostgreSQL on the system if it is not already installed.
- *
- * @returns {Promise<void>} - Returns a promise that resolves when the installation is complete.
  *
  * @throws {Error} - Throws an error if the PostgreSQL installation fails.
  */
@@ -122,7 +136,7 @@ export const installPostgreSQL = async () => {
     }
 
     await runCommand({
-        command: `wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql.gpg`,
+        command: `wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/postgresql.gpg`,
         mute: true
     })
 
@@ -136,16 +150,15 @@ export const installPostgreSQL = async () => {
         mute: true
     })
     await runCommand({
-        command: `sudo apt-get install -y postgresql-16`,
+        command: `sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-16`,
         message: "Installing PostgreSQL 16.",
         successMessage: "PostgreSQL 16 installed."
     })
 
     await runCommand({
-        command: `/etc/init.d/postgresql start`,
+        command: `sudo systemctl enable --now postgresql`,
         mute: true
     })
 
+    await waitForPostgres();
 };
-
-

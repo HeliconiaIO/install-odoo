@@ -5,6 +5,7 @@ export interface RunCommandType {
     message?: string;
     successMessage?: string;
     mute?: boolean;
+    input?: string;             // Data written to the command's stdin
 }
 
 export interface CloneRepoType {

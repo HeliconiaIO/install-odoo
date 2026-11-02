@@ -29,16 +29,18 @@ export async function cloneRepo(options: CloneRepoType & { accessToken?: string 
   // Construct the full path to the target directory
   const targetPath: string = path.join(targetDir);
 
-  // Check if the directory already exists and remove it if needed
-  if (fs.existsSync(targetPath)) {
-    runCommand({
-      command: `rm -rf ${targetPath}`,
-      mute: true,
-    });
-    await runCommand({
-      command: `sudo mkdir -p ${targetPath}`,
-      mute: true
-    });
+  // The target must be missing or an empty directory (never delete anything the user may own)
+  if (fs.existsSync(targetPath) && fs.readdirSync(targetPath).length > 0) {
+    throw new Error(`Cannot clone ${repoName}: ${targetPath} already exists and is not empty.`);
+  }
+  await runCommand({
+    command: `sudo mkdir -p ${targetPath}`,
+    mute: true
+  });
+
+  if (process.env.DRY_RUN === '1') {
+    console.log(pc.yellow(`[DRY RUN] git clone --branch=${branch} --depth=1 ${repoUrl} ${targetPath}`));
+    return;
   }
 
   // Set up a CLI progress bar
@@ -69,6 +71,8 @@ export async function cloneRepo(options: CloneRepoType & { accessToken?: string 
   // Initialize simpleGit with the specified base directory
   const git: SimpleGit = simpleGit(gitOptions);
 
+  const redact = (message: string) => (accessToken ? message.split(accessToken).join('***') : message);
+
   try {
     // If accessToken is provided, modify the repoUrl to include the token
     const clonedRepoUrl = accessToken
@@ -77,10 +81,16 @@ export async function cloneRepo(options: CloneRepoType & { accessToken?: string 
 
     // Clone the specified repo with the given branch and depth
     await git.clone(clonedRepoUrl, targetPath, [`--branch=${branch}`, "--depth=1"]);
+
+    // Do not leave the access token behind in .git/config
+    if (accessToken) {
+      await simpleGit({ baseDir: targetPath }).remote(['set-url', 'origin', repoUrl]);
+    }
+
     progressBar.stop();
     console.log(pc.green(`✔ `) + `Successfully cloned ${repoName} (branch: ${branch}) to ${targetPath}`);
   } catch (error) {
     progressBar.stop();
-    console.error(pc.red(`✘ `) + `Failed to clone ${repoName}: ${error}`);
+    throw new Error(redact(`Failed to clone ${repoName}: ${error}`));
   }
 }

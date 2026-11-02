@@ -1,4 +1,5 @@
 import { runCommand } from "@helpers/run-command";
+import { computeOdooTuning, isDryRun, OdooTuning } from "@helpers/system";
 import crypto from 'crypto';
 import fs from "fs";
 import path from "path";
@@ -12,7 +13,7 @@ import { OdooConfigType } from "types";
  * @returns A randomly generated strong password.
  */
 export function generateStrongAdminPassword(length: number = 16): string {
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
     return Array.from(crypto.randomFillSync(new Uint32Array(length)))
         .map((x) => charset[x % charset.length])
         .join('');
@@ -63,40 +64,21 @@ export const prepareAddonsPath = (odooHome: string, isEnterprise?: boolean): str
 };
 
 /**
- * Sets up the Odoo configuration by creating the necessary configuration files and directories
- * based on the provided `config` object. This function handles paths, user settings, and services
- * required for Odoo installation.
+ * Renders the `[options]` section of the Odoo configuration file.
  *
- * @param {OdooConfigType} config - The configuration object containing all the details for setting up Odoo.
- *
- * @returns {Promise<void>} - Returns a promise that resolves when the configuration setup is complete.
- *
- * @throws {Error} - Throws an error if any step in the configuration process fails (e.g., file system issues).
+ * Worker and memory limits are derived from the server hardware (see `computeOdooTuning`) so a
+ * runaway request is killed by Odoo itself instead of the kernel OOM killer taking the whole server down.
  */
-export const setupOdooConfig = async (config: OdooConfigType) => {
+export const renderOdooConfig = (
+    config: Pick<OdooConfigType, 'odooUser' | 'odooHome' | 'isEnterprise' | 'pgHost' | 'pgPort' | 'pgUser' | 'pgPassword' | 'httpPort' | 'geventPort' | 'nginx'> & { adminPassword: string },
+    tuning: OdooTuning = computeOdooTuning(),
+): string => {
+    const { odooUser, odooHome, isEnterprise, pgHost, pgPort, pgUser, pgPassword, adminPassword, httpPort, geventPort, nginx } = config;
 
-    const {
-        odooUser,
-        odooHome,
-        isEnterprise,
-        pgHost,
-        pgPort,
-        pgUser,
-        pgPassword,
-        strongPassword,
-        adminPassword,
-        httpPort,
-        geventPort,
-        nginx
-    } = config;
-
-    const filePath = `/etc/${odooUser}-server.conf`
-
-    // Define the configuration content
-    const configContent = `
+    return `
 [options]
 ; General settings
-admin_passwd = ${strongPassword ? generateStrongAdminPassword(16) : adminPassword}
+admin_passwd = ${adminPassword}
 db_host = ${pgHost}
 db_port = ${pgPort}
 db_user = ${pgUser}
@@ -110,22 +92,45 @@ logfile = /var/log/${odooUser}/${odooUser}-server.log
 ; HTTP and server settings
 http_port = ${httpPort}
 gevent_port = ${geventPort}
-proxy_mode = ${nginx}
-  `.trim();
+proxy_mode = ${nginx ? 'True' : 'False'}
+
+; Workers and resource limits (sized for this server)
+workers = ${tuning.workers}
+max_cron_threads = ${tuning.maxCronThreads}
+limit_memory_soft = ${tuning.limitMemorySoft}
+limit_memory_hard = ${tuning.limitMemoryHard}
+limit_time_cpu = ${tuning.limitTimeCpu}
+limit_time_real = ${tuning.limitTimeReal}
+`.trimStart();
+};
+
+/**
+ * Sets up the Odoo configuration by writing `/etc/<user>-server.conf` for the provided `config`.
+ *
+ * @param {OdooConfigType} config - The configuration object containing all the details for setting up Odoo.
+ *
+ * @returns {Promise<void>} - Returns a promise that resolves when the configuration setup is complete.
+ *
+ * @throws {Error} - Throws an error if any step in the configuration process fails (e.g., file system issues).
+ */
+export const setupOdooConfig = async (config: OdooConfigType) => {
+    const { odooUser, strongPassword, adminPassword } = config;
+
+    const filePath = `/etc/${odooUser}-server.conf`
+
+    const configContent = renderOdooConfig({
+        ...config,
+        adminPassword: strongPassword ? generateStrongAdminPassword(16) : adminPassword,
+    });
 
     try {
-        // Create the directory for the configuration file if it does not exist
-        const configDir = path.dirname(filePath);
-        if (!fs.existsSync(configDir)) {
-            fs.mkdirSync(configDir, { recursive: true });
+        if (!isDryRun()) {
+            // Create the file readable only by root first, then hand it over to the Odoo user
+            fs.writeFileSync(filePath, configContent, { encoding: "utf-8", mode: 0o640 });
         }
 
-        // Write the configuration content to the specified file
-        fs.writeFileSync(filePath, configContent, { encoding: "utf-8", mode: 0o640 });
-
-
         await runCommand({
-            command: `sudo chown ${odooUser}:${odooUser} ${filePath}`,
+            command: `sudo chown ${odooUser}:${odooUser} ${filePath} && sudo chmod 640 ${filePath}`,
             message: `Configuring Odoo configuration file.`,
             successMessage: `Odoo configuration file created successfully at: ${filePath}`
         })
@@ -135,28 +140,3 @@ proxy_mode = ${nginx}
         process.exit(1);
     }
 };
-
-
-/**
- * Creates the start.sh script for the Odoo server using the fs module, sets permissions, and assigns ownership.
- * @param odooHome - The base directory for the Odoo installation.
- * @param odooUser - The system user for running Odoo.
- */
-export function createOdooStartup(odooHome: string, odooUser: string): void {
-    const scriptPath = path.join(odooHome, "odoo-server", "start.sh");
-
-    console.log(pc.magenta("* Creating startup file using fs module..."));
-
-    // Build the content of the start.sh script
-    const odooBinPath = path.join(odooHome, "odoo-server", "odoo-bin");
-    const scriptContent = `#!/bin/sh\nsudo -u ${odooUser} ${odooBinPath} --config=/etc/${odooUser}-server.conf`;
-
-    // Write the content to start.sh
-    try {
-        fs.writeFileSync(scriptPath, scriptContent, { mode: 0o755 });
-        console.log(pc.green(`✅ Startup script ${scriptPath} created successfully!`));
-    } catch (error) {
-        console.error(pc.red(`❌ Failed to create the startup script: ${error}`));
-        process.exit(1);
-    }
-}

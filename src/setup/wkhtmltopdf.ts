@@ -1,13 +1,15 @@
-import { runCommand } from "@helpers/run-command"; // Adjust the import path as necessary
-import { execSync } from "child_process";
+import { runCommand } from "@helpers/run-command";
+import { tryExec } from "@helpers/system";
 import os from "os";
 import path from "path";
 import pc from "picocolors";
 
+const WKHTMLTOPDF_VERSION = "0.12.6.1-3";
 
+// Architectures that the upstream Ubuntu (jammy) packages are built for. The jammy package also
+// works on Ubuntu 24.04.
 const archMap: Record<string, string> = {
     x64: "amd64",
-    ia32: "i386",
     arm64: "arm64",
     ppc64: "ppc64el",
 };
@@ -15,31 +17,19 @@ const archMap: Record<string, string> = {
 /**
  * Checks if wkhtmltopdf is installed on the system.
  *
- * This function attempts to execute the `wkhtmltopdf` command to retrieve its
- * version. If the command executes successfully, the version is returned. 
- * If it fails (e.g., wkhtmltopdf is not installed), the function returns false.
- *
- * @returns {string | false} - Returns the version of wkhtmltopdf if installed,
- *                             or false if it is not installed.
+ * @returns {string | false} - Returns the version of wkhtmltopdf if installed, or false if it is not.
  */
 export const isWkhtmltopdfInstalled = () => {
-    try {
-        const version = execSync('wkhtmltopdfc --version', { encoding: 'utf-8', stdio: "pipe" }).trim();
-        return version;
-    } catch (error) {
-        return false;
-    }
+    return tryExec('wkhtmltopdf --version') || false;
 };
 
 /**
- * Installs wkhtmltopdf on the system.
+ * Installs wkhtmltopdf (with patched Qt, as Odoo requires) from the upstream packaging releases.
  *
- * This function executes the necessary commands to download and install
- * wkhtmltopdf. It ensures that the installation is performed with the required
- * permissions and provides feedback on the installation process.
+ * The package is downloaded to the temp directory and installed with apt so its dependencies
+ * are resolved automatically.
  *
- * @returns {Promise<void>} - A promise that resolves when the installation is complete.
- *                            Throws an error if the installation fails.
+ * @throws {Error} - Throws an error if the download or installation fails.
  */
 export const installWkhtmltopdf = async () => {
     const wkhtmltopdfVersion = isWkhtmltopdfInstalled()
@@ -48,58 +38,39 @@ export const installWkhtmltopdf = async () => {
         return;
     }
 
-    // Check if the OS is Ubuntu 22.04 or 24.04
-    const version = execSync('lsb_release -r -s', { encoding: 'utf-8' }).trim();
+    const arch = os.arch();
+    const normalizedArch = archMap[arch];
 
-    if (version !== '22.04' && version !== '24.04') {
-        console.error(pc.red("This script is only supported on Ubuntu 22.04 or 24.04."));
+    if (!normalizedArch) {
+        console.error(pc.yellow(`! No wkhtmltopdf package is available for architecture "${arch}". Install it manually to print PDF reports.`));
         return;
     }
 
-    // Determine the architecture
-    const arch = os.arch();
-    const normalizedArch = archMap[arch] || arch;
+    const downloadUrl = `https://github.com/wkhtmltopdf/packaging/releases/download/${WKHTMLTOPDF_VERSION}/wkhtmltox_${WKHTMLTOPDF_VERSION}.jammy_${normalizedArch}.deb`;
+    const debPath = path.join(os.tmpdir(), path.basename(downloadUrl));
 
-    // Check if the architecture is supported
-    if (!normalizedArch) {
-        console.error(`Unsupported architecture: ${arch}`);
-        process.exit(1);
+    try {
+        await runCommand({
+            command: `wget --quiet -O ${debPath} ${downloadUrl}`,
+            message: "Downloading wkhtmltopdf package",
+            successMessage: "Wkhtmltopdf Downloaded"
+        })
+
+        await runCommand({
+            command: `sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${debPath}`,
+            message: "Installing wkhtmltopdf.",
+            successMessage: "Wkhtmltopdf Installed."
+        })
+    } finally {
+        await runCommand({
+            command: `rm -f ${debPath}`,
+            mute: true
+        }).catch(() => undefined);
     }
 
-    // Construct the download URL dynamically
-
-    const downloadUrl = `https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_${normalizedArch}.deb`;
-
-    // Extract the file name from the URL
-    const fileName = path.basename(downloadUrl);
-
-    // Download the package
+    // Make the binaries available on the default PATH of every service
     await runCommand({
-        command: `sudo wget ${downloadUrl}`,
-        message: "Downloading wkhtmltopdf package",
-        successMessage: "Wkhtmltopdf Downloaded"
-    })
-
-    // Install the package
-    await runCommand({
-        command: `sudo gdebi --n ${fileName}`,
-        message: "Installing wkhtmltopdf.",
-        successMessage: "Wkhtmltopdf Installed."
-    })
-
-    // Clean up the downloaded .deb file
-    await runCommand({
-        command: `sudo rm -f ${fileName}`,
-        mute: true
-    });
-
-    // Create symbolic links
-    await runCommand({
-        command: `sudo ln -sf /usr/local/bin/wkhtmltopdf /usr/bin`,
-        mute: true
-    });
-    await runCommand({
-        command: `sudo ln -sf /usr/local/bin/wkhtmltoimage /usr/bin`,
+        command: `sudo ln -sf /usr/local/bin/wkhtmltopdf /usr/bin/wkhtmltopdf && sudo ln -sf /usr/local/bin/wkhtmltoimage /usr/bin/wkhtmltoimage`,
         mute: true
     });
 };

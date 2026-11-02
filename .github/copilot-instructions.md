@@ -6,17 +6,20 @@ This is a Node.js CLI tool that automates Odoo ERP installation on Ubuntu server
 ## Architecture & Core Concepts
 
 ### Module Organization
-- **`src/index.ts`**: CLI entry point with interactive prompts using `prompts` library
+- **`src/index.ts`**: CLI entry point (`commander`): `install` (default) and `doctor` commands
+- **`src/commands/install.ts`**: interactive prompts / `--config` file, validation and the installation sequence
 - **`src/helpers/`**: Shared utilities (`@helpers/*` path mapping)
   - `run-command.ts`: Core command execution with `ora` spinners
   - `clone-repo.ts`: Git operations with progress bars using `simple-git`
   - `misc.ts`: GitHub token validation and branded output
+  - `system.ts`: root/OS checks, input validation helpers, worker/memory tuning, HTTP wait
+  - `validate.ts`: `validateConfig` for the whole install config
 - **`src/setup/`**: Installation modules (`@setup/*` path mapping)
   - Each module handles one aspect: `postgres.ts`, `nginx.ts`, `python.ts`, etc.
 - **`src/types.ts`**: Central type definitions, especially `OdooConfigType`
 
 ### Installation Flow (Critical Sequence)
-The installation follows a strict order in `src/index.ts` lines 209-256:
+The installation follows a strict order in `runInstallation()` (`src/commands/install.ts`):
 1. `prepareServer()` - Updates system, installs base packages
 2. `installPostgreSQL()` - If requested
 3. `createPostgreSQLUser()` - If local PostgreSQL
@@ -24,10 +27,10 @@ The installation follows a strict order in `src/index.ts` lines 209-256:
 5. `cloneOdooEnterprise()` - If Enterprise edition
 6. `installPipPackages()` - Creates venv, installs Python dependencies
 7. `setupOdooConfig()` - Generates `/etc/[user]-server.conf`
-8. `setupDaemon()` - Creates systemd service
+8. `setupService()` - Writes and enables the native systemd unit (`src/setup/service.ts`)
 9. `installWkhtmltopdf()` - PDF rendering support
 10. `setupNginx()` + `enableSSL()` - Reverse proxy with optional SSL
-11. `rotateOdooLog()` + `startOdooService()` - Final setup
+11. `rotateOdooLog()` + `startOdooService()` - Final setup; waits for `/web/health`
 
 ## Key Patterns & Conventions
 
@@ -61,10 +64,11 @@ await runCommand({
 
 ### Build & Development
 ```bash
-npm run dev      # Development with tsx (hot reload)
+npm run dev      # Development with tsx
 npm run build    # Production build with tsup
 npm run start    # Run built CLI
-npm run lint     # ESLint validation
+npm run typecheck # tsc --noEmit
+npm test         # unit tests
 npm run format   # Prettier formatting
 ```
 
@@ -87,7 +91,7 @@ Always use TypeScript path mappings:
 - **wkhtmltopdf releases**: GitHub releases API for PDF rendering
 
 ### System Integration
-- **systemd**: Custom daemon scripts in `/etc/init.d/`
+- **systemd**: Native unit `/etc/systemd/system/<user>-server.service` (`Type=simple`, `Restart=on-failure`). Never use an init.d script: systemd wraps it with `RemainAfterExit=yes` and stops tracking Odoo
 - **Nginx**: Site configs in `/etc/nginx/sites-available/`
 - **File permissions**: Consistent `chown odooUser:odooUser` pattern
 - **Virtual environments**: Python venv in `${odooHome}/venv`
@@ -118,6 +122,13 @@ Always use TypeScript path mappings:
 - GitHub tokens masked in output (`'*'.repeat(token.length)`)
 - File permissions: Config files get `0o640` mode
 - User isolation: Dedicated system user for Odoo service
+
+## Doctor (`src/setup/doctor.ts`)
+`install-odoo doctor [--fix]` runs read-only checks and offers fixes; each check returns a `CheckResult` with an optional `fix`.
+New fixes must be idempotent, back up files they change, and never overwrite values the user set.
+
+## Tests
+`pnpm test` runs `node --test` through `tsx`. Keep generators pure (`renderServiceUnit`, `renderOdooConfig`, `renderNginxConfig`, ...) so they can be tested without root.
 
 ## Common Debugging Points
 - **Command failures**: Check `runCommand` error outputs first
