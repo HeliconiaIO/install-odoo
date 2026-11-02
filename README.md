@@ -24,7 +24,7 @@ sudo npx install-odoo
 - **Community or Enterprise.** Enterprise needs a GitHub token that can read `odoo/enterprise`.
 - **Runs as a native systemd service.** It starts at boot and is restarted automatically if Odoo crashes or gets OOM-killed. The installer waits until Odoo answers on `/web/health` before it reports success.
 - **Sized for your server.** `workers`, `max_cron_threads` and `limit_memory_*` are calculated from the CPU and RAM of the machine.
-- **Everything around Odoo.** PostgreSQL 16, an isolated Python virtualenv, `wkhtmltopdf`, log rotation, and optionally an Nginx reverse proxy with a free Let's Encrypt certificate.
+- **Everything around Odoo.** PostgreSQL 18, an isolated Python virtualenv, `wkhtmltopdf`, log rotation, and optionally an Nginx reverse proxy with a free Let's Encrypt certificate.
 - **`doctor` command.** Diagnoses an existing installation and repairs the common problems (see [Doctor](#doctor)).
 
 ## Requirements
@@ -56,7 +56,7 @@ Add `--dry-run` to see every command without running it.
 | System user | `odoo` | Created if missing. The service is named `<user>-server`. |
 | Super admin password | generated | A strong random password is written to the config file. Or type your own (8+ characters). |
 | HTTP port / websocket port | `8069` / `8072` | Must be different. |
-| Install PostgreSQL 16 | Yes | Uses the official PostgreSQL apt repository. |
+| Install PostgreSQL 18 | Yes | Uses the official PostgreSQL apt repository (PGDG). On an Ubuntu release PGDG no longer builds for, the PostgreSQL shipped with Ubuntu is installed instead. |
 | PostgreSQL host / port | `localhost` / `5432` | Use another host to connect to an existing database server. |
 | PostgreSQL user / password | Odoo user / required | The role is created with `CREATEDB` when PostgreSQL is local. |
 | Install `wkhtmltopdf` | Yes | Patched Qt build 0.12.6.1-3, required for PDF reports. |
@@ -175,7 +175,7 @@ The package is published from GitHub Actions with [npm Trusted Publishing](https
 (no npm token is stored). Bump `version` in `package.json`, commit, then push a matching tag:
 
 ```bash
-git tag v1.2.2 && git push origin v1.2.2
+git tag v1.2.3 && git push origin v1.2.3
 ```
 
 ## License

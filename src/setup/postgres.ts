@@ -3,6 +3,7 @@ import { isDryRun, isValidPgIdentifier, tryExec } from "@helpers/system";
 import { execSync } from "child_process";
 import { Client } from 'pg';
 import pc from "picocolors";
+import { POSTGRES_VERSION } from "../constants";
 
 /**
  * Checks whether PostgreSQL is installed on the system.
@@ -135,25 +136,38 @@ export const installPostgreSQL = async () => {
         return;
     }
 
-    await runCommand({
-        command: `wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/postgresql.gpg`,
-        mute: true
-    })
+    // PGDG only publishes suites for supported Ubuntu releases; an end-of-life release has none.
+    const codename = isDryRun() ? null : tryExec('lsb_release -cs');
+    const hasPgdgSuite = !codename || tryExec(`curl -fsI -m 20 http://apt.postgresql.org/pub/repos/apt/dists/${codename}-pgdg/Release`) !== null;
 
-    await runCommand({
-        command: `echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list`,
-        mute: true
-    });
+    if (hasPgdgSuite) {
+        await runCommand({
+            command: `wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor --yes -o /usr/share/keyrings/postgresql.gpg`,
+            mute: true
+        })
 
-    await runCommand({
-        command: `sudo apt-get update`,
-        mute: true
-    })
-    await runCommand({
-        command: `sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-16`,
-        message: "Installing PostgreSQL 16.",
-        successMessage: "PostgreSQL 16 installed."
-    })
+        await runCommand({
+            command: `echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list`,
+            mute: true
+        });
+
+        await runCommand({
+            command: `sudo apt-get update`,
+            mute: true
+        })
+        await runCommand({
+            command: `sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-${POSTGRES_VERSION}`,
+            message: `Installing PostgreSQL ${POSTGRES_VERSION}.`,
+            successMessage: `PostgreSQL ${POSTGRES_VERSION} installed.`
+        })
+    } else {
+        console.log(pc.yellow(`! The PostgreSQL apt repository has no packages for Ubuntu ${codename}: installing the PostgreSQL version shipped with Ubuntu instead.`));
+        await runCommand({
+            command: `sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql`,
+            message: "Installing PostgreSQL.",
+            successMessage: "PostgreSQL installed."
+        })
+    }
 
     await runCommand({
         command: `sudo systemctl enable --now postgresql`,

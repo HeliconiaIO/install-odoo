@@ -4,8 +4,11 @@ export type SupportedOdooVersion = (typeof SUPPORTED_ODOO_VERSIONS)[number];
 
 export const DEFAULT_ODOO_VERSION = '19.0';
 
+/** PostgreSQL major version installed from the official PostgreSQL apt repository (PGDG) for every Odoo version. */
+export const POSTGRES_VERSION = 18;
+
 /**
- * What a release needs beyond the baseline (Ubuntu 22.04, PostgreSQL 16). Odoo 20.0 requires Python 3.12 or newer
+ * What a release needs beyond the baseline (Ubuntu 22.04). Odoo 20.0 requires Python 3.12 or newer
  * (`MIN_PY_VERSION` in `odoo/release.py`), which only ships with Ubuntu 24.04, and PostgreSQL 16 (`MIN_PG_VERSION`).
  */
 export const ODOO_VERSION_REQUIREMENTS: Partial<Record<SupportedOdooVersion, { minUbuntu: string; minPostgres: number }>> = {
